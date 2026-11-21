@@ -1,0 +1,15 @@
+# Shunter agent documentation
+
+Start here: [AI agent Flowbook guide](https://getshunter.github.io/staging/docs/for-agents/)
+
+Core references:
+- [Flowbook format](https://getshunter.github.io/staging/docs/format/)
+- [Task reference](https://getshunter.github.io/staging/docs/tasks/)
+- [CLI reference](https://getshunter.github.io/staging/docs/cli/)
+- [CI migration guide](https://getshunter.github.io/staging/docs/migrate-ci/)
+- [Known limitations](https://getshunter.github.io/staging/docs/known-limitations/)
+- [Flowbook JSON Schema](https://getshunter.github.io/staging/schema/flowbook.schema.json)
+
+Migration:
+- [Copy-paste prompt](https://getshunter.github.io/staging/docs/agent-migration-prompt/)
+- [Migration gallery](https://getshunter.github.io/staging/docs/migration-examples/)

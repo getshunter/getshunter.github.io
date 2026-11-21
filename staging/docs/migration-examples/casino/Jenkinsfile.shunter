@@ -1,0 +1,24 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build, test and package') {
+            steps {
+                sh '''
+                    curl --fail --location --retry 3 --proto '=https' --tlsv1.2 'https://raw.githubusercontent.com/getshunter/shunter-action/main/install.sh' -o .shunter/install.sh
+                    runner="$(sh .shunter/install.sh '0.2.4.1107')"
+                    "$runner" casino.flowbook --flow build --ci jenkins --html-log ".shunter/$BUILD_NUMBER/report.html"
+                '''
+            }
+        }
+        stage('Archive package') {
+            steps {
+                archiveArtifacts artifacts: 'casino_game.tar.gz', fingerprint: true
+            }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: ".shunter/${env.BUILD_NUMBER}/report.html", allowEmptyArchive: true
+        }
+    }
+}

@@ -1,0 +1,43 @@
+name: Test with Shunter
+'on': [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    name: Shunter (${{ matrix.os }}, CMake ${{ matrix.cmake }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        cmake: ['3.15', '3.x']
+        include:
+          - os: windows-latest
+            compiler: cl
+            static_postfix: _static
+            list_install_tree: tree /F
+          - os: ubuntu-latest
+            list_install_tree: tree
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+      - name: Select the MSVC compiler
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-Content -Path $env:GITHUB_ENV -Value 'CC=cl'
+          Add-Content -Path $env:GITHUB_ENV -Value 'CXX=cl'
+      - uses: seanmiddleditch/gha-setup-ninja@v4
+      - uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ matrix.cmake }}
+      - name: Run the TinyXML2 Flowbook
+        uses: getshunter/shunter-action@v1
+        with:
+          version: ${{ vars.SHUNT_RUNNER_VERSION || '0.2.4.1107' }}
+          file: tinyxml2.flowbook
+          flow: test
+          variables: |
+            StaticPostfix=${{ matrix.static_postfix }}
+            ListInstallTree=${{ matrix.list_install_tree }}

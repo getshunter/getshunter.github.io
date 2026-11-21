@@ -1,0 +1,20 @@
+# Excerpt from https://github.com/godotengine/godot/blob/f9d4a5c6b0d01a6da0f9373e5e371f2eda0fbfd8/.github/workflows/windows_builds.yml
+# Pinned commit: f9d4a5c6b0d01a6da0f9373e5e371f2eda0fbfd8
+# License: MIT
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=editor)
+            target: editor
+            compiler: msvc
+          - name: Editor w/ clang-cl (target=editor, use_llvm=yes)
+            target: editor
+            compiler: clang
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps

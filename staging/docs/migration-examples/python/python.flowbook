@@ -1,0 +1,28 @@
+flows:
+- id: main
+  name: Python checks
+  description: Run lint and tests together for local development.
+  tasks:
+  - id: label-lint
+    type: comment
+    name: Run Python lint checks
+    properties:
+      comment: Run Python lint checks
+    description: The original GitHub Actions step used this command.
+  - id: lint
+    type: run-command
+    properties:
+      command: ruff check sample tests
+  - id: label-tests
+    type: comment
+    name: Run Python tests
+    properties:
+      comment: Run Python tests
+    description: The JUnit flag is the allowed reporting addition to the upstream test command.
+  - id: tests
+    type: run-command
+    properties:
+      command: python -m pytest --junitxml=report.xml
+    artifacts:
+    - type: junit
+      path: report.xml

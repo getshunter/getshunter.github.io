@@ -1,0 +1,66 @@
+flows:
+  - id: build
+    name: Build, test and package the casino game
+    description: Configure, build, test and package the game in one local run.
+    tasks:
+      - id: label-clean-workspace
+        type: comment
+        name: Create an isolated build directory
+        properties:
+          comment: Create an isolated build directory
+        description: This corresponds to the original Jenkins workspace setup.
+      - id: clean-workspace
+        type: temporary-directory
+        properties:
+          output-variable: CasinoWork
+        children:
+          - id: label-configure
+            type: comment
+            name: "Original Jenkins CMake configure stage."
+            properties:
+              comment: "Original Jenkins CMake configure stage."
+          - id: configure
+            type: run-command
+            properties:
+              command: cmake -B build -S "${FlowbookDir}"
+              working-directory: ${CasinoWork}
+          - id: label-compile
+            type: comment
+            name: "Original Jenkins compile stage."
+            properties:
+              comment: "Original Jenkins compile stage."
+          - id: compile
+            type: run-command
+            properties:
+              command: cmake --build build
+              working-directory: ${CasinoWork}
+          - id: label-smoke-test
+            type: comment
+            name: "Original Jenkins launch/smoke-test stage."
+            properties:
+              comment: "Original Jenkins launch/smoke-test stage."
+          - id: smoke-test
+            type: run-command
+            properties:
+              command: ./build/casino_game
+              working-directory: ${CasinoWork}
+          - id: label-unit-tests
+            type: comment
+            name: "Original Jenkins unit-test stage."
+            properties:
+              comment: "Original Jenkins unit-test stage."
+          - id: unit-tests
+            type: run-command
+            properties:
+              command: ./build/test_game
+              working-directory: ${CasinoWork}
+          - id: label-package
+            type: comment
+            name: "Original Jenkins archive/package stage."
+            properties:
+              comment: "Original Jenkins archive/package stage."
+          - id: package
+            type: run-command
+            properties:
+              command: tar -czf "${FlowbookDir}/casino_game.tar.gz" build/casino_game
+              working-directory: ${CasinoWork}

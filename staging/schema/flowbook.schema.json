@@ -1,0 +1,3744 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://shunter.dev/schemas/flowbook.schema.json",
+  "title": "Shunter Flowbook",
+  "description": "A Flowbook contains variables and one or more Flows. Keys use lowercase kebab-case; variable names and enum values remain PascalCase.",
+  "markdownDescription": "A Flowbook contains variables and one or more Flows. Keys use lowercase kebab-case; variable names and enum values remain PascalCase.",
+  "type": "object",
+  "properties": {
+    "variables": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "immutable": {
+                    "type": "boolean"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "sensitive": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "value"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "group": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "values": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    ]
+                  },
+                  "variables": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    ]
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": [
+                      "values"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "variables"
+                    ]
+                  }
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "section": {
+            "type": "string"
+          },
+          "working-directory": {
+            "type": "string"
+          },
+          "fail-run-on-ignored-failures": {
+            "type": "boolean"
+          },
+          "environment": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "sensitive": {
+                      "type": "boolean"
+                    },
+                    "inherit": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "oneOf": [
+                    {
+                      "required": [
+                        "value"
+                      ],
+                      "properties": {
+                        "inherit": {
+                          "enum": [
+                            false
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "required": [
+                        "inherit"
+                      ],
+                      "properties": {
+                        "inherit": {
+                          "const": true
+                        }
+                      },
+                      "not": {
+                        "required": [
+                          "value"
+                        ]
+                      }
+                    }
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            ]
+          },
+          "tasks": {
+            "$ref": "#/$defs/tasks-or-empty"
+          }
+        },
+        "required": [
+          "id",
+          "tasks"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "flows"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "comment",
+            "run-command",
+            "create-directory",
+            "check-file-directory",
+            "delete-directory",
+            "create-text-file",
+            "run-python",
+            "set-variable",
+            "construct-path",
+            "get-path-component",
+            "if",
+            "else",
+            "else-if",
+            "copy-files",
+            "try",
+            "catch",
+            "finally",
+            "git-command",
+            "run-powershell",
+            "fail",
+            "export-log",
+            "run-flow",
+            "fail-if",
+            "group",
+            "delete-files",
+            "read-data-value",
+            "write-data-value",
+            "create-archive",
+            "extract-archive",
+            "download-file",
+            "publish-artifact",
+            "for-each",
+            "parallel",
+            "calculate-file-hash",
+            "write-checksums",
+            "verify-checksums",
+            "create-directory-manifest",
+            "verify-directory-manifest",
+            "compare-directories",
+            "read-repository-state",
+            "check-process-startup",
+            "read-file-metadata",
+            "read-test-report",
+            "extract-text",
+            "validate-data",
+            "compare-data",
+            "temporary-directory"
+          ],
+          "markdownEnumDescriptions": [
+            "Add a note to the workflow; this task does not execute work.",
+            "Run a command in a process and check its exit code.",
+            "Create a directory and any required parent directories.",
+            "Check whether a path exists and has the requested kind.",
+            "Delete a directory tree after checking the target for safety.",
+            "Write text to a file, creating parent directories when configured.",
+            "Run a Python script or inline Python code in the worker.",
+            "Assign a literal, expanded text, or expression to a workflow variable.",
+            "Join path components using the selected path rules.",
+            "Extract a selected component from a path.",
+            "Run child tasks when the configured condition is true.",
+            "Run child tasks when the preceding If branch was not taken.",
+            "Run child tasks when earlier branches were not taken and this condition is true.",
+            "Copy or move files selected by the source path and filters.",
+            "Run child tasks and route failures to a matching Catch task.",
+            "Run after a matching failure in the preceding Try block.",
+            "Run cleanup tasks after the associated Try and Catch blocks.",
+            "Run a Git operation against a local repository.",
+            "Run a script file or inline PowerShell code.",
+            "Stop the current run with the configured failure message.",
+            "Export the current execution log in the selected format.",
+            "Run another Flow, optionally from a selected Flowbook.",
+            "Fail the run when a comparison or Python condition is true.",
+            "Organise child tasks into a named sequence.",
+            "Delete matching files and optionally empty directories",
+            "Read a JSON or YAML value into a variable. Objects and arrays become compact JSON text.",
+            "Write a JSON or YAML value. YAML output drops comments and formatting. The write is atomic.",
+            "Create a ZIP or tar.gz archive. Auto uses .zip, .tar.gz, or .tgz and rejects other extensions.",
+            "Extract a ZIP or tar.gz archive into an absent or empty directory. Overwrite replaces files one at a time and is not atomic for the whole directory.",
+            "Download a file over HTTP or HTTPS. Header values are not shown in reports.",
+            "Stage files beside the run report and publish using the CI provider when available.",
+            "Execute child tasks for every item. Item and index variables are scoped to the loop and restored afterwards.",
+            "Run independent child tasks concurrently, with bounded concurrency.",
+            "Stream a regular file through SHA-256 and store its lowercase hexadecimal digest in a variable.",
+            "Write deterministic SHA-256 checksum entries for files selected by a glob.",
+            "Verify a SHA-256 checksum file and reject unsafe or escaping paths.",
+            "Create a deterministic JSON inventory of a directory tree with file hashes and link targets.",
+            "Compare a directory tree with a Create Directory Manifest inventory.",
+            "Compare relative paths, entry types and file contents in two directories.",
+            "Capture structured Git commit, branch and working tree status.",
+            "Launch an executable and confirm that it survives the observation interval.",
+            "Read portable metadata for one regular file or directory.",
+            "Parse a bounded JUnit XML report into structured test results.",
+            "Extract a regular-expression capture from UTF-8 text.",
+            "Validate JSON or YAML data against the supported local-reference Draft 7 JSON Schema subset.",
+            "Compare JSON or YAML values structurally without modifying either input.",
+            "Run child tasks with a scoped temporary directory and clean it up afterwards."
+          ]
+        },
+        "command": {
+          "type": "string",
+          "description": "Command to run",
+          "markdownDescription": "Command to run"
+        },
+        "workflow": {
+          "type": "string",
+          "description": "Flow to execute from the selected Flowbook.",
+          "markdownDescription": "Flow to execute from the selected Flowbook."
+        },
+        "call": {
+          "type": "string",
+          "description": "Flow to execute from the selected Flowbook.",
+          "markdownDescription": "Flow to execute from the selected Flowbook."
+        },
+        "properties": {
+          "type": "object"
+        },
+        "children": {
+          "$ref": "#/$defs/tasks-or-empty"
+        },
+        "tasks": {
+          "$ref": "#/$defs/tasks-or-empty"
+        },
+        "track-resource-usage": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "output-variable": {
+          "type": "string"
+        },
+        "retry-count": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            }
+          ]
+        },
+        "retry-delay-seconds": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            }
+          ]
+        },
+        "retry-backoff": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "timeout-seconds": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            }
+          ]
+        },
+        "enabled": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "stop-on-failure": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "environment": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "sensitive": {
+                    "type": "boolean"
+                  },
+                  "inherit": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "oneOf": [
+                  {
+                    "required": [
+                      "value"
+                    ],
+                    "properties": {
+                      "inherit": {
+                        "enum": [
+                          false
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "required": [
+                      "inherit"
+                    ],
+                    "properties": {
+                      "inherit": {
+                        "const": true
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "value"
+                      ]
+                    }
+                  }
+                ],
+                "additionalProperties": false
+              }
+            }
+          ]
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Glob for files created by this task."
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "file",
+                  "junit",
+                  "trx",
+                  "nunit"
+                ],
+                "description": "Artifact format; test-result formats are parsed and included in the run report."
+              },
+              "name": {
+                "type": "string",
+                "description": "Display name for the artifact."
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Fail the task if no matching files exist. Defaults to true."
+              },
+              "fail-on-failed-tests": {
+                "type": "boolean",
+                "description": "Fail the task when parsed test cases fail or error. Applies only to test-result types; defaults to true."
+              }
+            },
+            "required": [
+              "path",
+              "type"
+            ],
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "file"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                },
+                "then": {
+                  "not": {
+                    "required": [
+                      "fail-on-failed-tests"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "comment"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "comment": {
+                    "type": "string",
+                    "description": "Text shown in the outline as a note; this task does not run a command.",
+                    "markdownDescription": "Text shown in the outline as a note; this task does not run a command."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "run-command"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "description": "Command to run",
+                    "markdownDescription": "Command to run"
+                  },
+                  "working-directory": {
+                    "type": "string",
+                    "description": "Working directory",
+                    "markdownDescription": "Working directory"
+                  },
+                  "expected-exit-code": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "The exit code that counts as success for the command.",
+                    "markdownDescription": "The exit code that counts as success for the command."
+                  },
+                  "log-output": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Include captured command output in the run log.",
+                    "markdownDescription": "Include captured command output in the run log."
+                  },
+                  "wait-for-completion": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Wait for the command to exit. When false, launch independently without capturing output or checking its exit code; later cancellation does not stop it.",
+                    "markdownDescription": "Wait for the command to exit. When false, launch independently without capturing output or checking its exit code; later cancellation does not stop it."
+                  }
+                },
+                "required": [
+                  "command"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "create-directory"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "directory": {
+                    "type": "string",
+                    "description": "Directory to create",
+                    "markdownDescription": "Directory to create"
+                  },
+                  "create-parent-directories": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Create parent directories as well",
+                    "markdownDescription": "Create parent directories as well"
+                  }
+                },
+                "required": [
+                  "directory"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "check-file-directory"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "File or directory to check; relative paths use the task working directory.",
+                    "markdownDescription": "File or directory to check; relative paths use the task working directory."
+                  },
+                  "kind": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Any",
+                          "File",
+                          "Directory"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Path kind that must match: any entry, a file, or a directory.",
+                    "markdownDescription": "Path kind that must match: any entry, a file, or a directory."
+                  },
+                  "expectation": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Exists",
+                          "DoesNotExist"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Choose whether the requested path should exist or be absent.",
+                    "markdownDescription": "Choose whether the requested path should exist or be absent."
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "delete-directory"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "directory": {
+                    "type": "string",
+                    "description": "Directory to delete",
+                    "markdownDescription": "Directory to delete"
+                  },
+                  "delete-tree": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Recursively delete all files and sub-directories",
+                    "markdownDescription": "Recursively delete all files and sub-directories"
+                  },
+                  "fail-if-directory-doesnt-exist": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Fail if the directory does not exist",
+                    "markdownDescription": "Fail if the directory does not exist"
+                  },
+                  "allow-delete-unversioned-files-in-repo": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Allow deleting untracked and ignored files inside a Git repository. Tracked files are preserved unless separately allowed.",
+                    "markdownDescription": "Allow deleting untracked and ignored files inside a Git repository. Tracked files are preserved unless separately allowed."
+                  },
+                  "allow-delete-versioned-files-in-repo": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Allow deleting Git-indexed files inside a repository. Untracked files are preserved unless separately allowed.",
+                    "markdownDescription": "Allow deleting Git-indexed files inside a repository. Untracked files are preserved unless separately allowed."
+                  }
+                },
+                "required": [
+                  "directory"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "create-text-file"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "file-path": {
+                    "type": "string",
+                    "description": "Path to text file",
+                    "markdownDescription": "Path to text file"
+                  },
+                  "file-contents": {
+                    "type": "string",
+                    "description": "Text file contents",
+                    "markdownDescription": "Text file contents"
+                  },
+                  "overwrite": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Replace the destination if it already exists.",
+                    "markdownDescription": "Replace the destination if it already exists."
+                  }
+                },
+                "required": [
+                  "file-path"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "run-python"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "run-python-script": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Select a Python script file instead of inline code.",
+                    "markdownDescription": "Select a Python script file instead of inline code."
+                  },
+                  "path-to-python-script": {
+                    "type": "string",
+                    "description": "Python script file to execute.",
+                    "markdownDescription": "Python script file to execute."
+                  },
+                  "run-inline-python-script": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Select inline Python code instead of a script file.",
+                    "markdownDescription": "Select inline Python code instead of a script file."
+                  },
+                  "inline-python-script": {
+                    "type": "string",
+                    "description": "Python code to execute in the task.",
+                    "markdownDescription": "Python code to execute in the task."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "anyOf": [
+                        {
+                          "required": [
+                            "run-python-script"
+                          ],
+                          "properties": {
+                            "run-python-script": {
+                              "const": "true"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "run-python-script"
+                          ],
+                          "properties": {
+                            "run-python-script": {
+                              "const": "true"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "run-inline-python-script"
+                          ],
+                          "properties": {
+                            "run-inline-python-script": {
+                              "const": false
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "run-inline-python-script"
+                          ],
+                          "properties": {
+                            "run-inline-python-script": {
+                              "const": "false"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "run-python-script"
+                          ],
+                          "properties": {
+                            "run-python-script": {
+                              "const": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "path-to-python-script"
+                      ]
+                    }
+                  },
+                  {
+                    "if": {
+                      "allOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "required": [
+                                "run-inline-python-script"
+                              ],
+                              "properties": {
+                                "run-inline-python-script": {
+                                  "const": "true"
+                                }
+                              }
+                            },
+                            {
+                              "required": [
+                                "run-inline-python-script"
+                              ],
+                              "properties": {
+                                "run-inline-python-script": {
+                                  "const": "true"
+                                }
+                              }
+                            },
+                            {
+                              "required": [
+                                "run-inline-python-script"
+                              ],
+                              "properties": {
+                                "run-inline-python-script": {
+                                  "const": true
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "not": {
+                            "anyOf": [
+                              {
+                                "required": [
+                                  "run-python-script"
+                                ],
+                                "properties": {
+                                  "run-python-script": {
+                                    "const": true
+                                  }
+                                }
+                              },
+                              {
+                                "required": [
+                                  "run-python-script"
+                                ],
+                                "properties": {
+                                  "run-python-script": {
+                                    "const": "true"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "inline-python-script"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "set-variable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Value",
+                          "FileContents",
+                          "TaskOutput"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Value source",
+                    "markdownDescription": "Value source"
+                  },
+                  "source-path": {
+                    "type": "string",
+                    "description": "File to read",
+                    "markdownDescription": "File to read"
+                  },
+                  "source-task": {
+                    "type": "string",
+                    "description": "Task ID; empty selects previous executed task",
+                    "markdownDescription": "Task ID; empty selects previous executed task"
+                  },
+                  "regex": {
+                    "type": "string",
+                    "description": "Optional extraction pattern",
+                    "markdownDescription": "Optional extraction pattern"
+                  },
+                  "regex-group": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "minimum": 0,
+                    "description": "Regex capture group",
+                    "markdownDescription": "Regex capture group"
+                  },
+                  "trim": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Trim captured whitespace",
+                    "markdownDescription": "Trim captured whitespace"
+                  },
+                  "variable-name": {
+                    "type": "string",
+                    "description": "Name of the workflow variable to assign.",
+                    "markdownDescription": "Name of the workflow variable to assign."
+                  },
+                  "variable-value": {
+                    "type": "string",
+                    "description": "Text value to assign to the variable.",
+                    "markdownDescription": "Text value to assign to the variable."
+                  }
+                },
+                "required": [
+                  "variable-name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "construct-path"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "input-var": {
+                    "type": "string",
+                    "description": "Input Variable",
+                    "markdownDescription": "Input Variable"
+                  },
+                  "output-var": {
+                    "type": "string",
+                    "description": "Output Variable",
+                    "markdownDescription": "Output Variable"
+                  },
+                  "expand-relative-to-base-path": {
+                    "type": "string",
+                    "description": "Resolve a relative input path against this base path before constructing the result.",
+                    "markdownDescription": "Resolve a relative input path against this base path before constructing the result."
+                  },
+                  "make-canonical-path": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Make Canonical",
+                    "markdownDescription": "Make Canonical"
+                  },
+                  "add-trailing-backslash": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Add a trailing path separator to the result when missing.",
+                    "markdownDescription": "Add a trailing path separator to the result when missing."
+                  },
+                  "remove-trailing-backslash": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Remove trailing path separators from the result.",
+                    "markdownDescription": "Remove trailing path separators from the result."
+                  }
+                },
+                "required": [
+                  "input-var",
+                  "output-var"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "get-path-component"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "input-var": {
+                    "type": "string",
+                    "description": "Input Variable",
+                    "markdownDescription": "Input Variable"
+                  },
+                  "output-var": {
+                    "type": "string",
+                    "description": "Output Variable",
+                    "markdownDescription": "Output Variable"
+                  },
+                  "component": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Drive",
+                          "ParentPath",
+                          "FileName",
+                          "FileBaseName",
+                          "FileExtension"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Which Path Component",
+                    "markdownDescription": "Which Path Component"
+                  }
+                },
+                "required": [
+                  "input-var",
+                  "output-var",
+                  "component"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "if"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "condition": {
+                    "type": "string",
+                    "description": "Python expression that determines whether this branch runs.",
+                    "markdownDescription": "Python expression that determines whether this branch runs."
+                  }
+                },
+                "required": [
+                  "condition"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "else"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "else-if"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "condition": {
+                    "type": "string",
+                    "description": "Python expression checked when earlier branches in the chain did not run.",
+                    "markdownDescription": "Python expression checked when earlier branches in the chain did not run."
+                  }
+                },
+                "required": [
+                  "condition"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "copy-files"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Copy",
+                          "Move"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Copy or move",
+                    "markdownDescription": "Copy or move"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Exclude patterns, separated by newline or semicolon",
+                    "markdownDescription": "Exclude patterns, separated by newline or semicolon"
+                  },
+                  "overwrite": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Overwrite existing files",
+                    "markdownDescription": "Overwrite existing files"
+                  },
+                  "preserve-structure": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Preserve relative paths",
+                    "markdownDescription": "Preserve relative paths"
+                  },
+                  "fail-if-no-match": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Fail when no sources match",
+                    "markdownDescription": "Fail when no sources match"
+                  },
+                  "from-path": {
+                    "type": "string",
+                    "description": "Source Path",
+                    "markdownDescription": "Source Path"
+                  },
+                  "to-path": {
+                    "type": "string",
+                    "description": "Destination Path",
+                    "markdownDescription": "Destination Path"
+                  }
+                },
+                "required": [
+                  "from-path",
+                  "to-path"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "try"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "catch"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "finally"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "git-command"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "operation": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Clone",
+                          "Fetch",
+                          "Pull",
+                          "Clean",
+                          "Checkout",
+                          "Commit",
+                          "Other"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Git operation to perform in the local repository.",
+                    "markdownDescription": "Git operation to perform in the local repository."
+                  },
+                  "local-repo": {
+                    "type": "string",
+                    "description": "Local Repository",
+                    "markdownDescription": "Local Repository"
+                  },
+                  "remote-repo": {
+                    "type": "string",
+                    "description": "Remote Repository",
+                    "markdownDescription": "Remote Repository"
+                  },
+                  "extra-options": {
+                    "type": "string",
+                    "description": "Additional arguments appended to the generated Git command.",
+                    "markdownDescription": "Additional arguments appended to the generated Git command."
+                  }
+                },
+                "required": [
+                  "local-repo"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "anyOf": [
+                        {
+                          "required": [
+                            "operation"
+                          ],
+                          "properties": {
+                            "operation": {
+                              "const": "Clone"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "operation"
+                          ],
+                          "properties": {
+                            "operation": {
+                              "const": "clone"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "remote-repo"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "run-powershell"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "powershell-version": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "PowerShell7",
+                          "WindowsPowerShell51"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "PowerShell 7 uses pwsh. Windows PowerShell 5.1 uses powershell.exe and requires Windows. No automatic fallback.",
+                    "markdownDescription": "PowerShell 7 uses pwsh. Windows PowerShell 5.1 uses powershell.exe and requires Windows. No automatic fallback."
+                  },
+                  "run-powershell-script": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Select a PowerShell script file instead of inline code.",
+                    "markdownDescription": "Select a PowerShell script file instead of inline code."
+                  },
+                  "path-to-powershell-script": {
+                    "type": "string",
+                    "description": "PowerShell script file to execute.",
+                    "markdownDescription": "PowerShell script file to execute."
+                  },
+                  "run-inline-powershell-script": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Select inline PowerShell code instead of a script file.",
+                    "markdownDescription": "Select inline PowerShell code instead of a script file."
+                  },
+                  "inline-powershell-script": {
+                    "type": "string",
+                    "description": "PowerShell code to execute in the task.",
+                    "markdownDescription": "PowerShell code to execute in the task."
+                  },
+                  "parameters": {
+                    "type": "string",
+                    "description": "Arguments passed to the selected script file.",
+                    "markdownDescription": "Arguments passed to the selected script file."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "anyOf": [
+                        {
+                          "required": [
+                            "run-powershell-script"
+                          ],
+                          "properties": {
+                            "run-powershell-script": {
+                              "const": "true"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "run-powershell-script"
+                          ],
+                          "properties": {
+                            "run-powershell-script": {
+                              "const": "true"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "run-inline-powershell-script"
+                          ],
+                          "properties": {
+                            "run-inline-powershell-script": {
+                              "const": false
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "run-inline-powershell-script"
+                          ],
+                          "properties": {
+                            "run-inline-powershell-script": {
+                              "const": "false"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "run-powershell-script"
+                          ],
+                          "properties": {
+                            "run-powershell-script": {
+                              "const": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "path-to-powershell-script"
+                      ]
+                    }
+                  },
+                  {
+                    "if": {
+                      "allOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "required": [
+                                "run-inline-powershell-script"
+                              ],
+                              "properties": {
+                                "run-inline-powershell-script": {
+                                  "const": "true"
+                                }
+                              }
+                            },
+                            {
+                              "required": [
+                                "run-inline-powershell-script"
+                              ],
+                              "properties": {
+                                "run-inline-powershell-script": {
+                                  "const": "true"
+                                }
+                              }
+                            },
+                            {
+                              "required": [
+                                "run-inline-powershell-script"
+                              ],
+                              "properties": {
+                                "run-inline-powershell-script": {
+                                  "const": true
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "not": {
+                            "anyOf": [
+                              {
+                                "required": [
+                                  "run-powershell-script"
+                                ],
+                                "properties": {
+                                  "run-powershell-script": {
+                                    "const": true
+                                  }
+                                }
+                              },
+                              {
+                                "required": [
+                                  "run-powershell-script"
+                                ],
+                                "properties": {
+                                  "run-powershell-script": {
+                                    "const": "true"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "inline-powershell-script"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "fail"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "Failure message",
+                    "markdownDescription": "Failure message"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "export-log"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "export-log-format": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "HTML",
+                          "XML"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "File format used for the exported execution log.",
+                    "markdownDescription": "File format used for the exported execution log."
+                  },
+                  "export-to-log-file": {
+                    "type": "string",
+                    "description": "Destination file for the exported log.",
+                    "markdownDescription": "Destination file for the exported log."
+                  },
+                  "errors-only": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Include only errors and related failure details in the export.",
+                    "markdownDescription": "Include only errors and related failure details in the export."
+                  },
+                  "include-platform-info": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Include the executing machine's OS, processor and memory details in the export.",
+                    "markdownDescription": "Include the executing machine's OS, processor and memory details in the export."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "run-flow"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "flowbook": {
+                    "type": "string",
+                    "description": "Flowbook file that contains the Flow to run; empty uses the current Flowbook.",
+                    "markdownDescription": "Flowbook file that contains the Flow to run; empty uses the current Flowbook."
+                  },
+                  "flow": {
+                    "type": "string",
+                    "description": "Flow to execute from the selected Flowbook.",
+                    "markdownDescription": "Flow to execute from the selected Flowbook."
+                  }
+                },
+                "required": [
+                  "flow"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "fail-if"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Python",
+                          "Compare"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Condition mode",
+                    "markdownDescription": "Condition mode"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Failure message",
+                    "markdownDescription": "Failure message"
+                  },
+                  "left": {
+                    "type": "string",
+                    "description": "Left value or path",
+                    "markdownDescription": "Left value or path"
+                  },
+                  "operator": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Equals",
+                          "NotEquals",
+                          "Contains",
+                          "NotContains",
+                          "Matches",
+                          "Exists",
+                          "NotExists",
+                          "Empty",
+                          "NotEmpty"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Comparison",
+                    "markdownDescription": "Comparison"
+                  },
+                  "right": {
+                    "type": "string",
+                    "description": "Right value",
+                    "markdownDescription": "Right value"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Python expression; the task fails when it evaluates to true.",
+                    "markdownDescription": "Python expression; the task fails when it evaluates to true."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "anyOf": [
+                        {
+                          "required": [
+                            "mode"
+                          ],
+                          "properties": {
+                            "mode": {
+                              "const": "Python"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "mode"
+                          ],
+                          "properties": {
+                            "mode": {
+                              "const": "python"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "condition"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "group"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "delete-files"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "type": "string",
+                    "description": "Pattern to delete",
+                    "markdownDescription": "Pattern to delete"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Exclude patterns",
+                    "markdownDescription": "Exclude patterns"
+                  },
+                  "fail-if-no-match": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Fail when no files match",
+                    "markdownDescription": "Fail when no files match"
+                  },
+                  "remove-empty-directories": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Remove matching empty directories",
+                    "markdownDescription": "Remove matching empty directories"
+                  }
+                },
+                "required": [
+                  "pattern"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "read-data-value"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "file-path": {
+                    "type": "string",
+                    "description": "JSON or YAML file",
+                    "markdownDescription": "JSON or YAML file"
+                  },
+                  "format": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Auto",
+                          "Json",
+                          "Yaml"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "File format. Auto uses the file extension.",
+                    "markdownDescription": "File format. Auto uses the file extension."
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "Value path. Empty reads the document root.",
+                    "markdownDescription": "Value path. Empty reads the document root."
+                  },
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Variable that receives the value",
+                    "markdownDescription": "Variable that receives the value"
+                  },
+                  "use-default": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Use Default when the path is missing",
+                    "markdownDescription": "Use Default when the path is missing"
+                  },
+                  "default": {
+                    "type": "string",
+                    "description": "Value stored when the path is missing",
+                    "markdownDescription": "Value stored when the path is missing"
+                  }
+                },
+                "required": [
+                  "file-path",
+                  "output-variable"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "write-data-value"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "file-path": {
+                    "type": "string",
+                    "description": "JSON or YAML file",
+                    "markdownDescription": "JSON or YAML file"
+                  },
+                  "format": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Auto",
+                          "Json",
+                          "Yaml"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "File format. Auto uses the file extension.",
+                    "markdownDescription": "File format. Auto uses the file extension."
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "Value path. Empty replaces the document root.",
+                    "markdownDescription": "Value path. Empty replaces the document root."
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "Value to write. Ignored when the type is Null.",
+                    "markdownDescription": "Value to write. Ignored when the type is Null."
+                  },
+                  "value-type": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "String",
+                          "Number",
+                          "Bool",
+                          "Json",
+                          "Null"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "How Value is interpreted",
+                    "markdownDescription": "How Value is interpreted"
+                  },
+                  "create-missing": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Create the file and missing parent values",
+                    "markdownDescription": "Create the file and missing parent values"
+                  }
+                },
+                "required": [
+                  "file-path"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "create-archive"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "description": "Files or glob to archive",
+                    "markdownDescription": "Files or glob to archive"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Exclude patterns",
+                    "markdownDescription": "Exclude patterns"
+                  },
+                  "base-directory": {
+                    "type": "string",
+                    "description": "Paths in the archive are relative to this directory. Empty uses the glob base.",
+                    "markdownDescription": "Paths in the archive are relative to this directory. Empty uses the glob base."
+                  },
+                  "destination": {
+                    "type": "string",
+                    "description": "Archive file to create",
+                    "markdownDescription": "Archive file to create"
+                  },
+                  "format": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Auto",
+                          "Zip",
+                          "TarGz"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Archive format. Auto uses the destination extension.",
+                    "markdownDescription": "Archive format. Auto uses the destination extension."
+                  },
+                  "compression-level": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "minimum": 0,
+                    "maximum": 9,
+                    "description": "Compression level from 0 to 9",
+                    "markdownDescription": "Compression level from 0 to 9"
+                  },
+                  "overwrite": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Replace an existing archive file",
+                    "markdownDescription": "Replace an existing archive file"
+                  }
+                },
+                "required": [
+                  "source",
+                  "destination"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "extract-archive"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "archive-path": {
+                    "type": "string",
+                    "description": "ZIP or tar.gz archive",
+                    "markdownDescription": "ZIP or tar.gz archive"
+                  },
+                  "destination": {
+                    "type": "string",
+                    "description": "Directory that receives the files",
+                    "markdownDescription": "Directory that receives the files"
+                  },
+                  "format": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Auto",
+                          "Zip",
+                          "TarGz"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Archive format. Auto uses the archive extension.",
+                    "markdownDescription": "Archive format. Auto uses the archive extension."
+                  },
+                  "overwrite": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Replace files in a non-empty destination one at a time. This is not atomic for the whole directory.",
+                    "markdownDescription": "Replace files in a non-empty destination one at a time. This is not atomic for the whole directory."
+                  }
+                },
+                "required": [
+                  "archive-path",
+                  "destination"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "download-file"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "HTTP or HTTPS URL",
+                    "markdownDescription": "HTTP or HTTPS URL"
+                  },
+                  "destination": {
+                    "type": "string",
+                    "description": "File or directory that receives the download",
+                    "markdownDescription": "File or directory that receives the download"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "description": "Expected SHA-256 hex digest. Empty skips the check.",
+                    "markdownDescription": "Expected SHA-256 hex digest. Empty skips the check."
+                  },
+                  "overwrite": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Replace an existing file",
+                    "markdownDescription": "Replace an existing file"
+                  },
+                  "headers": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    ],
+                    "description": "Request headers. Values are omitted from reports.",
+                    "markdownDescription": "Request headers. Values are omitted from reports."
+                  }
+                },
+                "required": [
+                  "url",
+                  "destination"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "publish-artifact"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Simple artifact name using letters digits dots underscores or hyphens",
+                    "markdownDescription": "Simple artifact name using letters digits dots underscores or hyphens"
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "File directory or glob to stage",
+                    "markdownDescription": "File directory or glob to stage"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Exclude patterns",
+                    "markdownDescription": "Exclude patterns"
+                  },
+                  "mode": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Auto",
+                          "LocalOnly"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Runtime publication policy",
+                    "markdownDescription": "Runtime publication policy"
+                  }
+                },
+                "required": [
+                  "name",
+                  "source"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "for-each"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "items-source": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "List",
+                          "Glob",
+                          "Variable"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "How to resolve the items",
+                    "markdownDescription": "How to resolve the items"
+                  },
+                  "items": {
+                    "type": "string",
+                    "description": "One item per line. Blank lines are ignored.",
+                    "markdownDescription": "One item per line. Blank lines are ignored."
+                  },
+                  "pattern": {
+                    "type": "string",
+                    "description": "Glob pattern",
+                    "markdownDescription": "Glob pattern"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Exclude patterns",
+                    "markdownDescription": "Exclude patterns"
+                  },
+                  "items-variable": {
+                    "type": "string",
+                    "description": "Variable containing newline-separated items",
+                    "markdownDescription": "Variable containing newline-separated items"
+                  },
+                  "item-variable": {
+                    "type": "string",
+                    "description": "Scoped variable holding the current item",
+                    "markdownDescription": "Scoped variable holding the current item"
+                  },
+                  "index-variable": {
+                    "type": "string",
+                    "description": "Optional scoped zero-based index variable",
+                    "markdownDescription": "Optional scoped zero-based index variable"
+                  },
+                  "continue-on-item-failure": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Continue with later items after an unhandled failure. The loop still fails.",
+                    "markdownDescription": "Continue with later items after an unhandled failure. The loop still fails."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "anyOf": [
+                        {
+                          "required": [
+                            "items-source"
+                          ],
+                          "properties": {
+                            "items-source": {
+                              "const": "Glob"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "items-source"
+                          ],
+                          "properties": {
+                            "items-source": {
+                              "const": "glob"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "pattern"
+                      ]
+                    }
+                  },
+                  {
+                    "if": {
+                      "anyOf": [
+                        {
+                          "required": [
+                            "items-source"
+                          ],
+                          "properties": {
+                            "items-source": {
+                              "const": "Variable"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "items-source"
+                          ],
+                          "properties": {
+                            "items-source": {
+                              "const": "variable"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "items-variable"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "parallel"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "max-parallel": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "minimum": 0,
+                    "maximum": 64,
+                    "description": "Maximum concurrent children. Zero uses the available CPU count.",
+                    "markdownDescription": "Maximum concurrent children. Zero uses the available CPU count."
+                  },
+                  "fail-fast": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Cancel running siblings and skip queued children after an unhandled failure.",
+                    "markdownDescription": "Cancel running siblings and skip queued children after an unhandled failure."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "calculate-file-hash"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "file-path": {
+                    "type": "string",
+                    "description": "Regular file to hash; a file link to a regular file is followed.",
+                    "markdownDescription": "Regular file to hash; a file link to a regular file is followed."
+                  },
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Variable that receives the lowercase SHA-256 digest",
+                    "markdownDescription": "Variable that receives the lowercase SHA-256 digest"
+                  }
+                },
+                "required": [
+                  "file-path",
+                  "output-variable"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "write-checksums"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "type": "string",
+                    "description": "File glob",
+                    "markdownDescription": "File glob"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Glob patterns excluded from the selection",
+                    "markdownDescription": "Glob patterns excluded from the selection"
+                  },
+                  "base-directory": {
+                    "type": "string",
+                    "description": "Optional root for a relative Pattern and checksum filenames",
+                    "markdownDescription": "Optional root for a relative Pattern and checksum filenames"
+                  },
+                  "destination": {
+                    "type": "string",
+                    "description": "Checksum file written atomically",
+                    "markdownDescription": "Checksum file written atomically"
+                  },
+                  "overwrite": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Replace an existing checksum file",
+                    "markdownDescription": "Replace an existing checksum file"
+                  }
+                },
+                "required": [
+                  "pattern",
+                  "destination"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "verify-checksums"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "checksum-file": {
+                    "type": "string",
+                    "description": "UTF-8 SHA-256 checksum entries using two spaces before relative paths",
+                    "markdownDescription": "UTF-8 SHA-256 checksum entries using two spaces before relative paths"
+                  },
+                  "base-directory": {
+                    "type": "string",
+                    "description": "Root for relative checksum paths; empty uses the checksum file directory",
+                    "markdownDescription": "Root for relative checksum paths; empty uses the checksum file directory"
+                  }
+                },
+                "required": [
+                  "checksum-file"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "create-directory-manifest"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "source-directory": {
+                    "type": "string",
+                    "description": "Directory to inventory",
+                    "markdownDescription": "Directory to inventory"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Relative glob patterns excluded from the inventory",
+                    "markdownDescription": "Relative glob patterns excluded from the inventory"
+                  },
+                  "manifest-file": {
+                    "type": "string",
+                    "description": "JSON manifest written atomically and excluded from its own inventory",
+                    "markdownDescription": "JSON manifest written atomically and excluded from its own inventory"
+                  },
+                  "overwrite": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Replace an existing manifest file",
+                    "markdownDescription": "Replace an existing manifest file"
+                  }
+                },
+                "required": [
+                  "source-directory",
+                  "manifest-file"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "verify-directory-manifest"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "source-directory": {
+                    "type": "string",
+                    "description": "Directory to compare",
+                    "markdownDescription": "Directory to compare"
+                  },
+                  "manifest-file": {
+                    "type": "string",
+                    "description": "Create Directory Manifest JSON inventory",
+                    "markdownDescription": "Create Directory Manifest JSON inventory"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Relative glob patterns excluded from the comparison; match the manifest's selection",
+                    "markdownDescription": "Relative glob patterns excluded from the comparison; match the manifest's selection"
+                  }
+                },
+                "required": [
+                  "source-directory",
+                  "manifest-file"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "compare-directories"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "left-directory": {
+                    "type": "string",
+                    "description": "First directory to compare",
+                    "markdownDescription": "First directory to compare"
+                  },
+                  "right-directory": {
+                    "type": "string",
+                    "description": "Second directory to compare",
+                    "markdownDescription": "Second directory to compare"
+                  },
+                  "exclude": {
+                    "type": "string",
+                    "description": "Relative glob patterns excluded from both directories",
+                    "markdownDescription": "Relative glob patterns excluded from both directories"
+                  }
+                },
+                "required": [
+                  "left-directory",
+                  "right-directory"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "read-repository-state"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "repository-directory": {
+                    "type": "string",
+                    "description": "Directory within the Git repository",
+                    "markdownDescription": "Directory within the Git repository"
+                  },
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Variable receiving a compact JSON repository state",
+                    "markdownDescription": "Variable receiving a compact JSON repository state"
+                  }
+                },
+                "required": [
+                  "repository-directory",
+                  "output-variable"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "check-process-startup"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "executable": {
+                    "type": "string",
+                    "description": "Executable path or command found in PATH",
+                    "markdownDescription": "Executable path or command found in PATH"
+                  },
+                  "arguments": {
+                    "type": "string",
+                    "description": "One literal process argument per nonempty line",
+                    "markdownDescription": "One literal process argument per nonempty line"
+                  },
+                  "working-directory": {
+                    "type": "string",
+                    "description": "Process working directory. Empty uses the task working directory",
+                    "markdownDescription": "Process working directory. Empty uses the task working directory"
+                  },
+                  "observation-seconds": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "minimum": 1,
+                    "maximum": 300,
+                    "description": "Seconds the process must remain alive; maximum 300",
+                    "markdownDescription": "Seconds the process must remain alive; maximum 300"
+                  }
+                },
+                "required": [
+                  "executable"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "read-file-metadata"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "file-path": {
+                    "type": "string",
+                    "description": "Regular file or directory",
+                    "markdownDescription": "Regular file or directory"
+                  },
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Variable receiving compact JSON metadata",
+                    "markdownDescription": "Variable receiving compact JSON metadata"
+                  }
+                },
+                "required": [
+                  "file-path",
+                  "output-variable"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "read-test-report"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "file-path": {
+                    "type": "string",
+                    "description": "JUnit XML report",
+                    "markdownDescription": "JUnit XML report"
+                  },
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Variable receiving test counts and cases as compact JSON",
+                    "markdownDescription": "Variable receiving test counts and cases as compact JSON"
+                  }
+                },
+                "required": [
+                  "file-path",
+                  "output-variable"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "extract-text"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "file-path": {
+                    "type": "string",
+                    "description": "UTF-8 text file to read; alternatively provide Text",
+                    "markdownDescription": "UTF-8 text file to read; alternatively provide Text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Text to search; mutually exclusive with FilePath",
+                    "markdownDescription": "Text to search; mutually exclusive with FilePath"
+                  },
+                  "pattern": {
+                    "type": "string",
+                    "description": "ECMAScript regular expression",
+                    "markdownDescription": "ECMAScript regular expression"
+                  },
+                  "capture-group": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "minimum": 0,
+                    "description": "Zero selects the whole match",
+                    "markdownDescription": "Zero selects the whole match"
+                  },
+                  "match-index": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "minimum": -1,
+                    "description": "Zero-based match index; -1 requires exactly one match",
+                    "markdownDescription": "Zero-based match index; -1 requires exactly one match"
+                  },
+                  "multiline": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Make ^ and $ match line boundaries",
+                    "markdownDescription": "Make ^ and $ match line boundaries"
+                  },
+                  "case-insensitive": {
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "true",
+                          "false"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Match without ASCII case distinction",
+                    "markdownDescription": "Match without ASCII case distinction"
+                  },
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Variable receiving the selected capture",
+                    "markdownDescription": "Variable receiving the selected capture"
+                  }
+                },
+                "required": [
+                  "pattern",
+                  "output-variable"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "validate-data"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "data-file": {
+                    "type": "string",
+                    "description": "JSON or YAML instance file",
+                    "markdownDescription": "JSON or YAML instance file"
+                  },
+                  "data-format": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Auto",
+                          "Json",
+                          "Yaml"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Auto uses .json, .yaml or .yml extension",
+                    "markdownDescription": "Auto uses .json, .yaml or .yml extension"
+                  },
+                  "schema-file": {
+                    "type": "string",
+                    "description": "Draft 7 JSON Schema file with local fragment references only",
+                    "markdownDescription": "Draft 7 JSON Schema file with local fragment references only"
+                  },
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Optional variable receiving compact validity and error JSON",
+                    "markdownDescription": "Optional variable receiving compact validity and error JSON"
+                  }
+                },
+                "required": [
+                  "data-file",
+                  "schema-file"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "compare-data"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "left-file": {
+                    "type": "string",
+                    "description": "First JSON or YAML value file",
+                    "markdownDescription": "First JSON or YAML value file"
+                  },
+                  "left-format": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Auto",
+                          "Json",
+                          "Yaml"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Auto uses the file extension",
+                    "markdownDescription": "Auto uses the file extension"
+                  },
+                  "right-file": {
+                    "type": "string",
+                    "description": "Second JSON or YAML value file",
+                    "markdownDescription": "Second JSON or YAML value file"
+                  },
+                  "right-format": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Auto",
+                          "Json",
+                          "Yaml"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\$\\{[^}]+\\}$"
+                      }
+                    ],
+                    "description": "Auto uses the file extension",
+                    "markdownDescription": "Auto uses the file extension"
+                  },
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Optional variable receiving compact difference JSON",
+                    "markdownDescription": "Optional variable receiving compact difference JSON"
+                  }
+                },
+                "required": [
+                  "left-file",
+                  "right-file"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "temporary-directory"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "output-variable": {
+                    "type": "string",
+                    "description": "Scoped variable containing the temporary directory path",
+                    "markdownDescription": "Scoped variable containing the temporary directory path"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    },
+    "tasks-or-empty": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/tasks"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

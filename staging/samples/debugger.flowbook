@@ -1,0 +1,117 @@
+# Choose Start Debugging to stop before the first task. See Help > Debugging a Flow.
+# Watch Greeting, Item, ItemIndex and FlowId; Step Into the loop and called Flow.
+# Breakpoints inside concurrent Parallel children are ignored; directly run a child to debug it.
+# The timeout Flow is expected to fail after one second:
+#   shunt samples/debugger.flowbook --flow timeout --ci none --no-html-log
+variables:
+  - group: "Sample"
+    values:
+      - name: "OutputDirectory"
+        value: "${FlowbookDir}/../build/samples/debugger"
+      - name: "Greeting"
+        value: "hello"
+        immutable: false
+flows:
+  - id: "step"
+    name: "Step through"
+    description: "Assignment, iteration, a cross-Flowbook call, Parallel and a successful retry."
+    tasks:
+      - id: "assign"
+        type: set-variable
+        name: "Change Greeting"
+        properties:
+          variable-name: Greeting
+          variable-value: "hello from the debugger"
+      - id: "prepare"
+        type: create-directory
+        name: "Create the output directory"
+        properties:
+          directory: "${OutputDirectory}"
+      - id: "show"
+        type: run-command
+        name: "Show Greeting"
+        properties:
+          command: "echo ${Greeting}"
+          working-directory: "${FlowbookDir}"
+      - id: "items"
+        type: for-each
+        name: "Echo three items"
+        properties:
+          items: |-
+            alpha
+            beta
+            gamma
+          index-variable: "ItemIndex"
+        children:
+          - id: "echo-item"
+            type: run-command
+            name: "Echo item"
+            properties:
+              command: "echo ${ItemIndex}:${Item}"
+              working-directory: "${FlowbookDir}"
+      - id: "inspect-child"
+        type: run-flow
+        name: "Inspect in another Flowbook"
+        properties:
+          flowbook: debugger-child.flowbook
+          flow: inspect
+      - id: "together"
+        type: parallel
+        name: "Two commands"
+        properties:
+          max-parallel: "2"
+          fail-fast: "false"
+        children:
+          - id: "first"
+            type: run-command
+            name: "First command"
+            properties:
+              command: "echo parallel-one"
+              working-directory: "${FlowbookDir}"
+          - id: "second"
+            type: run-command
+            name: "Second command"
+            properties:
+              command: "echo parallel-two"
+              working-directory: "${FlowbookDir}"
+      - id: "retry"
+        type: run-python
+        name: "Succeed on the second attempt"
+        retry-count: 1
+        environment:
+          SAMPLE_RETRY_FILE: "${OutputDirectory}/retry-${RunId}.txt"
+        properties:
+          inline-python-script: |-
+            import os
+            path = os.environ["SAMPLE_RETRY_FILE"]
+            count = int(open(path, encoding="utf-8").read()) if os.path.exists(path) else 0
+            count += 1
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(str(count))
+            if count < 2:
+                raise RuntimeError("attempt " + str(count) + " fails so the retry can run")
+            print("retry-ok", count)
+  - id: failure
+    name: Failure
+    description: "Enable Break on failure. This task fails after its single retry."
+    tasks:
+      - id: deliberate-failure
+        type: run-python
+        name: Inspect the failure
+        retry-count: 1
+        properties:
+          inline-python-script: |-
+            raise RuntimeError("Expected sample failure after retries; inspect the cause and Show Output.")
+  - id: "timeout"
+    name: "Timeout"
+    description: "Expected to fail. The Python sleep is longer than the one-second timeout."
+    tasks:
+      - id: "slow"
+        type: run-python
+        name: "Sleep past the timeout"
+        timeout-seconds: 1
+        properties:
+          inline-python-script: |-
+            import time
+            time.sleep(30)
+            print("should-not-print")

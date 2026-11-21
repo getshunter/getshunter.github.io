@@ -1,0 +1,33 @@
+variables:
+  - group: Build
+    values:
+      - name: Configuration
+        value: Debug
+        sensitive: false
+flows:
+  - id: build
+    name: Build and test
+    tasks:
+      - id: configure
+        name: Configure CMake
+        type: run-command
+        output-variable: ConfigureOutput
+        properties:
+          command: cmake -S . -B build
+          working-directory: ${FlowbookDir}
+      - id: compile
+        name: Build the C++ target
+        type: run-command
+        environment:
+          - name: CMAKE_BUILD_PARALLEL_LEVEL
+            value: "2"
+        stop-on-failure: true
+        properties:
+          command: cmake --build build --config ${Configuration}
+          working-directory: ${FlowbookDir}
+      - id: test
+        name: Run CTest
+        type: run-command
+        properties:
+          command: ctest --test-dir build -C ${Configuration} --output-on-failure
+          working-directory: ${FlowbookDir}

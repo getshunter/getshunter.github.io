@@ -1,0 +1,138 @@
+# Default Flow is green. It uses the bundled Python worker for If / Else If conditions.
+# The last Flow fails on purpose. Run it with: shunt samples/control-flow.flowbook --flow deliberate-failure
+variables:
+  - group: "Sample"
+    values:
+      - name: "Mode"
+        value: "unset"
+        immutable: false
+flows:
+  - id: "success"
+    name: "Control flow"
+    description: "Comment, group, conditions, try/catch/finally, an ignored failure, a Flow call, and a disabled task."
+    tasks:
+      - id: "note"
+        type: comment
+        name: "How to read this Flow"
+        properties:
+          comment: "The ignored failure is allowed to fail. Stop on failure is off, so the Flow continues and still succeeds."
+      - id: "set-mode"
+        type: set-variable
+        name: "Set Mode"
+        properties:
+          variable-name: "Mode"
+          variable-value: "sample"
+      - id: "checks"
+        type: group
+        name: "Checks"
+        children:
+          - id: "show-mode"
+            type: run-command
+            name: "Show Mode"
+            properties:
+              command: "echo ${Mode}"
+              working-directory: "${FlowbookDir}"
+          - id: "when-true"
+            type: if
+            name: "When the sum is 4"
+            properties:
+              condition: "2 + 2 == 4"
+            children:
+              - id: "taken"
+                type: run-command
+                name: "Taken branch"
+                properties:
+                  command: "echo branch-taken"
+                  working-directory: "${FlowbookDir}"
+          - id: "when-else-if"
+            type: else-if
+            name: "Skipped else-if"
+            properties:
+              condition: "False"
+            children:
+              - id: "unwanted-else-if"
+                type: fail
+                name: "Else-if must not run"
+                properties:
+                  message: "Else-if ran even though the If branch was taken."
+          - id: "when-else"
+            type: else
+            name: "Skipped else"
+            children:
+              - id: "unwanted-else"
+                type: fail
+                name: "Else must not run"
+                properties:
+                  message: "Else ran even though the If branch was taken."
+      - id: "attempt"
+        type: try
+        name: "Attempt"
+        children:
+          - id: "handled"
+            type: fail
+            name: "Handled failure"
+            properties:
+              message: "This failure is caught."
+      - id: "recover"
+        type: catch
+        name: "Recover"
+        children:
+          - id: "caught"
+            type: run-command
+            name: "Caught"
+            properties:
+              command: "echo caught"
+              working-directory: "${FlowbookDir}"
+      - id: "cleanup"
+        type: finally
+        name: "Cleanup"
+        children:
+          - id: "finished"
+            type: run-command
+            name: "Finally"
+            properties:
+              command: "echo finally"
+              working-directory: "${FlowbookDir}"
+      - id: "ignored"
+        type: run-command
+        name: "Ignored failure"
+        stop-on-failure: false
+        properties:
+          command: "exit 1"
+          working-directory: "${FlowbookDir}"
+      - id: "continued"
+        type: run-command
+        name: "Continued after the ignored failure"
+        properties:
+          command: "echo continued"
+          working-directory: "${FlowbookDir}"
+      - id: "call-helper"
+        type: run-flow
+        name: "Run helper"
+        properties:
+          flow: "helper"
+      - id: "disabled"
+        type: fail
+        name: "Disabled failure"
+        enabled: false
+        properties:
+          message: "A disabled task must not run."
+  - id: "helper"
+    name: "Helper"
+    description: "Called by the default Flow."
+    tasks:
+      - id: "ok"
+        type: run-command
+        name: "Helper ok"
+        properties:
+          command: "echo helper-ok"
+          working-directory: "${FlowbookDir}"
+  - id: "deliberate-failure"
+    name: "Deliberate failure"
+    description: "Expected to fail. Do not use this as the default run."
+    tasks:
+      - id: "fail"
+        type: fail
+        name: "Fail on purpose"
+        properties:
+          message: "This Flow fails on purpose."

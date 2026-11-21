@@ -1,0 +1,1 @@
+{"name":"shunter-node-migration","private":true,"type":"module","scripts":{"lint":"node --check sample/slug.js && node --check test/slug.test.js","test":"node --test"}}

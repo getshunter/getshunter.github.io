@@ -1,0 +1,13 @@
+{
+  "name": "shunter-node-starter",
+  "version": "1.0.0",
+  "description": "A dependency-free project for trying Shunter run-command tasks",
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}

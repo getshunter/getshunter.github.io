@@ -1,0 +1,28 @@
+flows:
+- id: main
+  name: Node checks
+  description: Run lint and tests together for local development.
+  tasks:
+  - id: label-lint
+    type: comment
+    name: Run Node lint checks
+    properties:
+      comment: Run Node lint checks
+    description: This task maps to the original GitHub Actions lint step.
+  - id: lint
+    type: run-command
+    properties:
+      command: npm run lint
+  - id: label-tests
+    type: comment
+    name: Run Node tests
+    properties:
+      comment: Run Node tests
+    description: The JUnit reporter flag is the allowed reporting addition to the upstream test command.
+  - id: tests
+    type: run-command
+    properties:
+      command: npm test -- --test-reporter=junit --test-reporter-destination=report.xml
+    artifacts:
+    - type: junit
+      path: report.xml

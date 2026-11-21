@@ -1,0 +1,16 @@
+# Excerpt from https://github.com/apache/arrow/blob/aea1a8bd0c8de8da0c864dad53af589e93abec6b/.github/workflows/cpp.yml and .github/workflows/python.yml
+# Pinned commit: aea1a8bd0c8de8da0c864dad53af589e93abec6b
+# License: Apache-2.0
+jobs:
+  linux-cpp:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: archery docker run conda-cpp
+  linux-python:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test PyArrow
+        run: archery docker run python

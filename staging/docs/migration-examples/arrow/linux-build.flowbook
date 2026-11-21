@@ -1,0 +1,129 @@
+variables:
+  - group: "General"
+    values:
+      PythonExe: "python"
+      ArcheryExe: "${RepoRoot}/.docker/archery-venv/Scripts/archery.exe"
+      ClangToolsVersion: "18"
+      LlvmVersion: "18"
+      UbuntuVersion: "22.04"
+      PythonVersion: "3.11"
+      PandasVersion: "2.2.2"
+      NumpyVersion: "2.0.2"
+flows:
+  - id: "prepare-archery"
+    name: "Prepare Archery"
+    description: "Check Docker and install Arrow's Archery Docker command in a local Python virtual environment."
+    tasks:
+      - id: "comment-prerequisites"
+        name: "Check Docker and prepare the local Archery command-line environment."
+        type: comment
+        properties:
+          comment: "Check Docker and prepare the local Archery command-line environment."
+      - id: "check-docker"
+        type: run-command
+        properties:
+          command: "docker version"
+          working-directory: "${RepoRoot}"
+      - id: "create-archery-environment"
+        type: run-command
+        properties:
+          command: "${PythonExe} -m venv .docker/archery-venv"
+          working-directory: "${RepoRoot}"
+      - id: "comment-install-archery"
+        type: comment
+        name: "Install Archery from the local development checkout."
+        properties:
+          comment: "Install Archery from the local development checkout."
+      - id: "install-archery"
+        type: run-command
+        properties:
+          command: "\"${RepoRoot}/.docker/archery-venv/Scripts/python.exe\" -m pip install -e \"dev/archery[docker]\""
+          working-directory: "${RepoRoot}"
+  - id: "cpp-linux"
+    name: "Linux C++ Build and Tests"
+    description: "Run Arrow's AMD64 Conda C++ build and CTest job in its upstream Docker image."
+    tasks:
+      - id: "comment-setup"
+        name: "Prepare Docker and Archery once before running the C++ job."
+        type: comment
+        properties:
+          comment: "Prepare Docker and Archery once before running the C++ job."
+      - id: "prepare-archery"
+        type: run-flow
+        properties:
+          flow: "Prepare Archery"
+      - id: "comment-build"
+        name: "Build and run Arrow's upstream C++ job; Archery builds required images and runs cpp_build.sh and cpp_test.sh."
+        type: comment
+        properties:
+          comment: "Build and run Arrow's upstream C++ job; Archery builds required images and runs cpp_build.sh and cpp_test.sh."
+      - id: "prepare-test-results"
+        type: run-command
+        properties:
+          command: "${PythonExe} -c \"import os; os.makedirs('.shunter/artifacts', exist_ok=True)\""
+          working-directory: "${RepoRoot}"
+      - id: "run-cpp-build-and-tests"
+        type: run-command
+        environment:
+          ARCH: "amd64"
+          ARROW_SIMD_LEVEL: "AVX2"
+          CLANG_TOOLS: "${ClangToolsVersion}"
+          LLVM: "${LlvmVersion}"
+          UBUNTU: "${UbuntuVersion}"
+        artifacts:
+          - name: "Arrow C++ tests"
+            path: "${RepoRoot}/.shunter/artifacts/cpp.xml"
+            type: "junit"
+        properties:
+          command: "\"${ArcheryExe}\" docker run --env ARROW_CTEST_OUTPUT_JUNIT=/arrow/.shunter/artifacts/cpp.xml conda-cpp"
+          working-directory: "${RepoRoot}"
+  - id: "pyarrow-linux"
+    name: "Linux PyArrow Build and Tests"
+    description: "Run the Arrow Python 3.11 Pandas CI job, including its C++ build, PyArrow build, and Python tests, in the upstream Docker image."
+    tasks:
+      - id: "comment-setup"
+        name: "Prepare Docker and Archery once before running the PyArrow job."
+        type: comment
+        properties:
+          comment: "Prepare Docker and Archery once before running the PyArrow job."
+      - id: "prepare-archery"
+        type: run-flow
+        properties:
+          flow: "Prepare Archery"
+      - id: "comment-build"
+        name: "Run the upstream conda-python-pandas job; its container executes C++ build, PyArrow build, then PyArrow tests in sequence."
+        type: comment
+        properties:
+          comment: "Run the upstream conda-python-pandas job; its container executes C++ build, PyArrow build, then PyArrow tests in sequence."
+      - id: "run-pyarrow-build-and-tests"
+        type: run-command
+        environment:
+          ARCH: "amd64"
+          NUMPY: "${NumpyVersion}"
+          PANDAS: "${PandasVersion}"
+          PYTHON: "${PythonVersion}"
+          UBUNTU: "${UbuntuVersion}"
+        artifacts:
+          - name: "PyArrow tests"
+            path: "${RepoRoot}/.shunter/artifacts/pyarrow.xml"
+            type: "junit"
+        properties:
+          command: "\"${ArcheryExe}\" docker run --env PYTEST_ARGS=--junitxml=/arrow/.shunter/artifacts/pyarrow.xml conda-python-pandas"
+          working-directory: "${RepoRoot}"
+
+  - id: gallery-builds
+    name: Gallery C++ and PyArrow jobs
+    tasks:
+    - id: gallery-builds-label
+      name: "Run the C++ and PyArrow job flows"
+      type: comment
+      properties:
+        comment: Run the C++ and PyArrow job flows
+    - id: cpp-job
+      type: run-flow
+      properties:
+        flow: cpp-linux
+    - id: pyarrow-job
+      type: run-flow
+      properties:
+        flow: pyarrow-linux

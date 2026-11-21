@@ -1,0 +1,16 @@
+version: 1.0.{build}
+image: Visual Studio 2022
+build_script:
+  - ps: |
+      $ErrorActionPreference = 'Stop'
+      $version = '0.2.4.1107'
+      $runner = & "$env:APPVEYOR_BUILD_FOLDER/install-shunter.ps1" -Version $version
+      & $runner '.github/flowbooks/windows-build.flowbook' --html-log .shunter/report.html --ci appveyor
+      if ($LASTEXITCODE -ne 0) { throw "Shunt failed with exit code $LASTEXITCODE" }
+artifacts:
+  - path: .shunter\report.*
+    name: Shunter reports
+    type: zip
+  - path: .shunter\artifacts\**\*
+    name: Flowbook artifacts
+    type: zip

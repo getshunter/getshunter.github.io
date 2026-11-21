@@ -1,0 +1,33 @@
+variables:
+  - group: Project
+    values:
+      - name: NodeEnvironment
+        value: test
+        sensitive: false
+flows:
+  - id: build
+    name: Install, test, and package
+    tasks:
+      - id: install
+        name: Install project dependencies
+        type: run-command
+        environment:
+          - name: NODE_ENV
+            value: ${NodeEnvironment}
+        output-variable: InstallOutput
+        properties:
+          command: npm install --ignore-scripts --no-audit --no-fund
+          working-directory: ${FlowbookDir}
+      - id: test
+        name: Run Node tests
+        type: run-command
+        stop-on-failure: true
+        properties:
+          command: npm test
+          working-directory: ${FlowbookDir}
+      - id: package
+        name: Create the package archive
+        type: run-command
+        properties:
+          command: npm pack
+          working-directory: ${FlowbookDir}

@@ -1,0 +1,22 @@
+# Called by debugger.flowbook. Step Into to inspect a cross-Flowbook frame.
+variables:
+  - group: Sample
+    values:
+      - name: ChildOnly
+        value: available in the called Flowbook
+flows:
+  - id: inspect
+    name: Inspect greeting
+    tasks:
+      - id: capture
+        type: set-variable
+        name: Capture inherited greeting
+        properties:
+          variable-name: SeenGreeting
+          variable-value: "${Greeting}"
+      - id: show
+        type: run-command
+        name: Show child context
+        properties:
+          command: "echo ${ChildOnly}: ${SeenGreeting}"
+          working-directory: "${FlowbookDir}"

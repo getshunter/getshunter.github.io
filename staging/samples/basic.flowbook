@@ -1,0 +1,38 @@
+variables:
+  build_config: Debug
+  build_dir: build
+  artifact_dir: artifacts
+
+flows:
+  - id: build
+    name: Build
+    tasks:
+      - id: restore
+        name: Restore dependencies
+        type: run-command
+        properties:
+          command: cmake --build ${build_dir} --target restore
+      - id: compile
+        name: Compile
+        type: run-command
+        properties:
+          command: cmake --build ${build_dir} --config ${build_config}
+      - id: test
+        name: Run tests
+        type: run-command
+        properties:
+          command: ctest --test-dir ${build_dir} --output-on-failure
+
+  - id: release
+    name: Release
+    tasks:
+      - id: call-build
+        name: Build first
+        type: run-flow
+        properties:
+          flow: build
+      - id: package
+        name: Package
+        type: run-command
+        properties:
+          command: cmake --build ${build_dir} --target package

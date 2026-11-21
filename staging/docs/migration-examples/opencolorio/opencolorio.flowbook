@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright Contributors to the OpenColorIO Project.
+
+variables:
+  - group: "Linux Build"
+    values:
+      - name: "BuildVariant"
+        value: "cy2026-debug-shared"
+        immutable: false
+      - name: "ContainerMount"
+        value: "type=bind,source=${RepoRoot},target=/workspace"
+      - name: "ContainerJobs"
+        value: ""
+      - name: "ContainerStage"
+        value: "all"
+      - name: "VfxYear"
+        value: ""
+        immutable: false
+flows:
+  - id: "main"
+    name: "Linux build and tests"
+    section: "Shared build steps"
+    description: "Run the build variant selected by BuildVariant."
+    environment:
+      OCIO_CI_PLATFORM: "linux"
+      OCIO_CI_BUILD_JOBS: "${ContainerJobs}"
+      OCIO_CI_STAGE: "${ContainerStage}"
+      OCIO_CI_VARIANT: "${BuildVariant}"
+    tasks:
+      - id: "comment-49"
+        name: ""
+        type: comment
+      - id: "comment-50"
+        name: "Check Docker engine"
+        type: comment
+        properties:
+          comment: "Check Docker engine"
+      - id: check-docker
+        type: run-command
+        properties:
+          command: docker version --format "{{.Server.Os}}/{{.Server.Arch}}"
+          working-directory: "${RepoRoot}"
+      - id: "comment-51"
+        name: ""
+        type: comment
+      - id: "comment-52"
+        name: "Get the ASWF image year from the build variant"
+        type: comment
+        properties:
+          comment: "Get the ASWF image year from the build variant"
+      - id: select-image-tag
+        type: set-variable
+        properties:
+          variable-name: "VfxYear"
+          variable-value: "${BuildVariant}"
+          regex: "^cy(202[3-6])-(debug-shared|release-shared|release-static)$"
+      - id: "comment-53"
+        name: ""
+        type: comment
+      - id: "comment-54"
+        name: "Build, test, and install in the ASWF container"
+        type: comment
+        properties:
+          comment: "Build, test, and install in the ASWF container"
+      - id: build-in-container
+        type: run-command
+        properties:
+          command: >-
+            docker run --rm --init --platform linux/amd64 --user 0:0 --entrypoint bash
+            --mount "${ContainerMount}" --workdir /workspace
+            --env OCIO_CI_PLATFORM --env OCIO_CI_VARIANT --env OCIO_CI_STAGE --env OCIO_CI_BUILD_JOBS
+            "aswf/ci-ocio:${VfxYear}" --noprofile --norc share/ci/flowbooks/run-ocio-ci.sh
+          working-directory: "${RepoRoot}"

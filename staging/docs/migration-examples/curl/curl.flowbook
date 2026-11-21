@@ -1,0 +1,128 @@
+variables:
+  - group: "Windows Build"
+    values:
+      CMakeDir: "$settings{windows.cmakeDir}"
+      NinjaDir: "$settings{windows.ninjaDir}"
+      GitUnixDir: "$settings{windows.gitUnixDir}"
+      BuildDirectory: "build/shunter-msvc-schannel"
+      Configuration: "Debug"
+      ParallelJobs: "5"
+      TestFlags: "-j2 1 2 3 94 100 438 1658 1922"
+      MsvcToolsDir: "$settings{windows.msvcToolsDir}"
+      WindowsSdkDir: "$settings{windows.windowsSdkDir}"
+      WindowsSdkVersion: "$settings{windows.windowsSdkVersion}"
+      SdkInclude: "${WindowsSdkDir}/Include/${WindowsSdkVersion}"
+      SdkLib: "${WindowsSdkDir}/Lib/${WindowsSdkVersion}"
+flows:
+  - id: "msvc-schannel"
+    name: "curl Windows MSVC Schannel"
+    description: "Build the native Windows x64 Debug Schannel variant and run a focused test-ci selection."
+    environment:
+      PATH: "${MsvcToolsDir}/bin/Hostx64/x64;${WindowsSdkDir}/bin/${WindowsSdkVersion}/x64;${CMakeDir};${NinjaDir};${GitUnixDir};$env{PATH}"
+      VcpkgEnabled: "false"
+      VcpkgApplocalDeps: "false"
+      INCLUDE: "${MsvcToolsDir}/include;${SdkInclude}/ucrt;${SdkInclude}/shared;${SdkInclude}/um;${SdkInclude}/winrt"
+      LIB: "${MsvcToolsDir}/lib/x64;${SdkLib}/ucrt/x64;${SdkLib}/um/x64"
+    tasks:
+      - id: "comment-1"
+        name: ""
+        type: comment
+      - id: "comment-2"
+        name: "Check MSVC, CMake, Ninja, Perl, and OpenSSL"
+        type: comment
+        properties:
+          comment: "Check MSVC, CMake, Ninja, Perl, and OpenSSL"
+      - id: "check-tools"
+        type: run-command
+        timeout-seconds: 45
+        properties:
+          command: "where cl.exe && cmake --version && ninja --version && perl -V:useithreads && openssl version"
+          working-directory: "${RepoRoot}"
+      - id: "comment-3"
+        name: ""
+        type: comment
+      - id: "comment-4"
+        name: "Configure x64 Debug with Schannel"
+        type: comment
+        properties:
+          comment: "Configure x64 Debug with Schannel"
+      - id: "configure"
+        type: run-command
+        timeout-seconds: 300
+        properties:
+          command: "cmake -S . -B \"${BuildDirectory}\" -G \"Ninja Multi-Config\" -DCMAKE_C_COMPILER=cl.exe -DCMAKE_UNITY_BUILD=ON -DCURL_DROP_UNUSED=ON -DCURL_WERROR=ON -DCMAKE_C_FLAGS=-DCURL_DEBUG_NO_WIN32_WND -DBUILD_TESTING=ON -DBUILD_SHARED_LIBS=OFF -DENABLE_DEBUG=ON -DCURL_USE_SCHANNEL=ON -DCURL_USE_OPENSSL=OFF -DUSE_WIN32_IDN=ON -DENABLE_UNICODE=ON -DUSE_SSLS_EXPORT=ON -DCURL_USE_LIBPSL=OFF -DCURL_USE_LIBSSH2=OFF -DCURL_ZLIB=OFF -DCURL_BROTLI=OFF -DCURL_ZSTD=OFF -DUSE_NGHTTP2=OFF"
+          working-directory: "${RepoRoot}"
+      - id: "comment-5"
+        name: ""
+        type: comment
+      - id: "comment-6"
+        name: "Build curl and libcurl"
+        type: comment
+        properties:
+          comment: "Build curl and libcurl"
+      - id: "build"
+        type: run-command
+        timeout-seconds: 600
+        properties:
+          command: "cmake --build \"${BuildDirectory}\" --config ${Configuration} --parallel ${ParallelJobs}"
+          working-directory: "${RepoRoot}"
+      - id: "comment-7"
+        name: ""
+        type: comment
+      - id: "comment-8"
+        name: "Print the built curl version and TLS backend"
+        type: comment
+        properties:
+          comment: "Print the built curl version and TLS backend"
+      - id: "version"
+        type: run-command
+        properties:
+          command: "\"${BuildDirectory}/src/${Configuration}/curl.exe\" --disable --version"
+          working-directory: "${RepoRoot}"
+      - id: "comment-9"
+        name: ""
+        type: comment
+      - id: "comment-10"
+        name: "Build curl test servers and helpers"
+        type: comment
+        properties:
+          comment: "Build curl test servers and helpers"
+      - id: "build-test-tools"
+        type: run-command
+        timeout-seconds: 600
+        properties:
+          command: "cmake --build \"${BuildDirectory}\" --config ${Configuration} --parallel ${ParallelJobs} --target testdeps"
+          working-directory: "${RepoRoot}"
+      - id: "comment-11"
+        name: ""
+        type: comment
+      - id: "comment-12"
+        name: "Run the selected curl test-ci cases"
+        type: comment
+        properties:
+          comment: "Run the selected curl test-ci cases"
+      - id: "test-ci"
+        type: run-command
+        timeout-seconds: 120
+        environment:
+          TFLAGS: "${TestFlags}"
+          CURL_TEST_NO_TASKKILL_TREE: "1"
+        properties:
+          command: "cmake --build \"${BuildDirectory}\" --config ${Configuration} --target test-ci"
+          working-directory: "${RepoRoot}"
+  - id: "maintenance"
+    name: "curl Maintenance"
+    description: "Run occasional maintenance tasks for the Windows Schannel build."
+    tasks:
+      - id: "clean-build-comment"
+        name: "Clean the default Schannel build, including the CMake cache"
+        type: comment
+        properties:
+          comment: "Clean the default Schannel build, including the CMake cache"
+      - id: "clean-build"
+        type: delete-directory
+        properties:
+          directory: "${RepoRoot}/build/shunter-msvc-schannel"
+          delete-tree: "true"
+          fail-if-directory-doesnt-exist: "false"
+          allow-delete-unversioned-files-in-repo: "true"
