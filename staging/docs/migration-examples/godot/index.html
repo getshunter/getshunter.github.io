@@ -66,23 +66,23 @@
 <tbody>
 <tr>
 <td>Checkout, cache restore, Python/SCons setup, and optional Windows SDK setup</td>
-<td>Provider steps and Flowbook setup tasks; the selected task sequence retains SDK decisions.</td>
+<td>Provider steps plus <code dir="auto">tool-setup</code>; <code dir="auto">msvc-editor</code> calls the setup Flow before the build, test, and archive stages.</td>
 </tr>
 <tr>
 <td>Windows editor SCons build</td>
-<td><code dir="auto">build-editor</code> task with the original SCons flags.</td>
+<td><code dir="auto">editor-build</code> Flow with the original SCons flags.</td>
 </tr>
 <tr>
 <td>Editor version and help smoke checks</td>
-<td><code dir="auto">editor-version</code> and <code dir="auto">editor-help</code> tasks.</td>
+<td><code dir="auto">editor-build</code> Flow smoke checks.</td>
 </tr>
 <tr>
 <td>Editor doctest invocation and JUnit output</td>
-<td><code dir="auto">editor-tests</code> task writes <code dir="auto">godot-tests.xml</code> and publishes it as JUnit.</td>
+<td><code dir="auto">editor-tests</code> Flow writes <code dir="auto">godot-tests.xml</code> and publishes it as JUnit.</td>
 </tr>
 <tr>
 <td>Archive the built editor files</td>
-<td><code dir="auto">archive-editor</code> task.</td>
+<td><code dir="auto">archive-editor</code> Flow.</td>
 </tr>
 <tr>
 <td>Editor/compiler matrix</td>

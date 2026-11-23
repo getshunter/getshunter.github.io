@@ -18,6 +18,7 @@ variables:
         immutable: false
 flows:
   - id: "main"
+    working-directory: ${FlowbookDir}
     name: "Linux build and tests"
     section: "Shared build steps"
     description: "Run the build variant selected by BuildVariant."
@@ -27,9 +28,6 @@ flows:
       OCIO_CI_STAGE: "${ContainerStage}"
       OCIO_CI_VARIANT: "${BuildVariant}"
     tasks:
-      - id: "comment-49"
-        name: ""
-        type: comment
       - id: "comment-50"
         name: "Check Docker engine"
         type: comment
@@ -41,8 +39,9 @@ flows:
           command: docker version --format "{{.Server.Os}}/{{.Server.Arch}}"
           working-directory: "${RepoRoot}"
       - id: "comment-51"
-        name: ""
         type: comment
+        properties:
+          comment: ''
       - id: "comment-52"
         name: "Get the ASWF image year from the build variant"
         type: comment
@@ -55,8 +54,9 @@ flows:
           variable-value: "${BuildVariant}"
           regex: "^cy(202[3-6])-(debug-shared|release-shared|release-static)$"
       - id: "comment-53"
-        name: ""
         type: comment
+        properties:
+          comment: ''
       - id: "comment-54"
         name: "Build, test, and install in the ASWF container"
         type: comment

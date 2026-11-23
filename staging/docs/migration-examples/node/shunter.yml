@@ -10,12 +10,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22]
-    runs-on: ubuntu-22.04
+        node-version: [22, 24]
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      # Project dependencies: add your setup steps here, or provision them in the Flow.
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      # This sample has no external project dependencies.
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run Shunter

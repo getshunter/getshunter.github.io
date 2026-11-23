@@ -66,12 +66,12 @@
 </thead>
 <tbody>
 <tr>
-<td><code dir="auto">shunt run &lt;flowbook&gt; [options]</code></td>
+<td><code dir="auto">shunt run [options] &lt;flowbook&gt;</code></td>
 <td>Run a Flowbook. Passing the Flowbook path as the first argument is a shorthand for <code dir="auto">run</code>.</td>
 </tr>
 <tr>
-<td><code dir="auto">shunt validate &lt;flowbook&gt; [--flow &lt;id-or-name&gt;] [--format human|json]</code></td>
-<td>Validate the document, or check the selected Flow and its reachable tasks. Human diagnostics are the default.</td>
+<td><code dir="auto">shunt validate [options] &lt;flowbook&gt;</code></td>
+<td>Validate the document, or check the selected Flow and its reachable tasks. Supports <code dir="auto">--flow</code> and <code dir="auto">--format</code>; human diagnostics are the default.</td>
 </tr>
 <tr>
 <td><code dir="auto">shunt schema</code></td>
@@ -96,9 +96,10 @@
 </tbody>
 </table>
 <p>The older run form <code dir="auto">shunt &lt;flowbook&gt; --ci-setup &lt;provider&gt; ...</code> is also accepted. A subcommand word is treated as a command only when that path is not an existing file.</p>
+<p>See <a href="/staging/docs/machine-settings/">machine settings</a> for settings file selection, defaults, and local overrides.</p>
 <p><code dir="auto">shunt ci-setup</code> prints a minimal one-job starting point. Repositories with matrices, path filters, caches, or publish jobs should write their wrappers from the <a href="/staging/docs/migration-examples/">gallery examples</a>, preserving the original action pins and provider-specific behavior.</p>
 <p><code dir="auto">shunt schema</code> prints the same bytes as <code dir="auto">schemas/flowbook.schema.json</code>. Installed runner packages include it at <code dir="auto">share/shunter/flowbook.schema.json</code>; local build outputs place it beside <code dir="auto">shunt</code>.</p>
-<p><code dir="auto">shunt validate --format json</code> writes an array of issues to standard output and returns 1 if any issue is an error. Each object has stable <code dir="auto">severity</code>, <code dir="auto">file</code>, <code dir="auto">line</code>, <code dir="auto">column</code>, <code dir="auto">path</code>, <code dir="auto">code</code>, <code dir="auto">message</code>, and <code dir="auto">hint</code> keys. <code dir="auto">line</code> and <code dir="auto">column</code> are one-based when the YAML parser has a source mark and zero when only a JSON path is available. The human format remains the default and prints the same repair hints in readable form. Unknown keys may include a <code dir="auto">did you mean</code> suggestion; task-level-only common fields and unexpanded <code dir="auto">run-flow</code> Flowbook paths have dedicated diagnostics.</p>
+<p><code dir="auto">shunt validate &lt;flowbook&gt; --format json</code> writes an array of issues to standard output and returns 1 if any issue is an error. Options may also precede the Flowbook, as in <code dir="auto">shunt validate --format json &lt;flowbook&gt;</code>. Each object has stable <code dir="auto">severity</code>, <code dir="auto">file</code>, <code dir="auto">line</code>, <code dir="auto">column</code>, <code dir="auto">path</code>, <code dir="auto">code</code>, <code dir="auto">message</code>, and <code dir="auto">hint</code> keys. <code dir="auto">line</code> and <code dir="auto">column</code> are one-based when the YAML parser has a source mark and zero when only a JSON path is available. The human format remains the default and prints the same repair hints in readable form. Unknown keys may include a <code dir="auto">did you mean</code> suggestion; task-level-only common fields and unexpanded <code dir="auto">run-flow</code> Flowbook paths have dedicated diagnostics.</p>
 <div class="sl-heading-wrapper level-h2"><h2 id="run-options">Run options</h2><a class="sl-anchor-link" href="#run-options"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore="">Section titled “Run options”</span></a></div>
 <table>
 <thead>
@@ -134,7 +135,7 @@
 </tr>
 <tr>
 <td><code dir="auto">--settings &lt;file&gt;</code></td>
-<td>Load machine settings for this run.</td>
+<td>Load machine settings for this run. Without this option, <code dir="auto">shunt run</code> uses <code dir="auto">SHUNTER_MACHINE_SETTINGS</code>, then <code dir="auto">.shunter/settings.local.yml</code> at the Flowbook’s git root (or Flowbook directory when no git root exists), if present.</td>
 </tr>
 <tr>
 <td><code dir="auto">--html-log &lt;path&gt;</code></td>
@@ -217,6 +218,7 @@
 </table>
 <div class="sl-heading-wrapper level-h2"><h2 id="summary-publication-options">Summary publication options</h2><a class="sl-anchor-link" href="#summary-publication-options"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore="">Section titled “Summary publication options”</span></a></div>
 <p><code dir="auto">publish-summary</code> accepts <code dir="auto">--report-url &lt;url&gt;</code> to add a report link and <code dir="auto">--ci &lt;provider&gt;</code> to select the summary destination. It also reads <code dir="auto">SHUNTER_REPORT_URL</code>, <code dir="auto">SHUNTER_ARTIFACTS_URL</code>, and <code dir="auto">SHUNTER_TEST_RESULTS_URL</code> when corresponding links are available.</p>
+<p>See <a href="/staging/docs/machine-settings/">machine settings</a> for settings files and <code dir="auto">SHUNTER_MACHINE_SETTINGS</code>.</p>
 <div class="sl-heading-wrapper level-h2"><h2 id="environment-variables">Environment variables</h2><a class="sl-anchor-link" href="#environment-variables"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore="">Section titled “Environment variables”</span></a></div>
 <p>These variables configure runner behavior. Other operating-system variables remain inherited by child commands and can be expanded in a Flowbook with <code dir="auto">$env{NAME}</code>.</p>
 <table>
@@ -260,6 +262,10 @@
 <td>Optional path to the Python worker script.</td>
 </tr>
 <tr>
+<td><code dir="auto">SHUNTER_MACHINE_SETTINGS</code></td>
+<td>Optional machine-settings YAML path used after <code dir="auto">--settings</code> and before the Flowbook project’s <code dir="auto">.shunter/settings.local.yml</code>.</td>
+</tr>
+<tr>
 <td><code dir="auto">GITHUB_STEP_SUMMARY</code></td>
 <td>GitHub Actions Markdown summary destination.</td>
 </tr>
@@ -278,6 +284,8 @@
 </tbody>
 </table>
 <p>On Windows, <code dir="auto">run-command</code> uses <code dir="auto">ComSpec</code> (normally <code dir="auto">cmd.exe</code>). Its built-ins such as <code dir="auto">del</code>, <code dir="auto">copy</code>, and <code dir="auto">rd</code> take precedence over package executables with the same name, including tools in <code dir="auto">node_modules\.bin</code>. An npm script written for Ubuntu CI can therefore behave differently on Windows. Run the Flow locally on the same OS family as CI when possible, such as Linux under WSL for an Ubuntu job. If your local OS differs, record that in the report instead of editing upstream scripts. Waited command tasks run with empty standard input, so interactive prompts fail fast. Migrated commands should pass non-interactive flags such as <code dir="auto">/q</code>, <code dir="auto">-y</code>, or <code dir="auto">--yes</code>, or set <code dir="auto">CI=true</code>.</p>
+<p>Multiline <code dir="auto">run-command</code> values run every line through the platform shell. The task uses the final line’s exit status; it is not fail-fast, matching <code dir="auto">/bin/sh -c</code>. On Windows, percent-variable and shell expansion still apply as they do to a single <code dir="auto">cmd.exe</code> command, and text that cannot be represented in the command shell’s system encoding is rejected before launch. Keep a task to one logical step and split independent commands into tasks.</p>
+<p>On Windows, npm also runs package scripts and lifecycle scripts (including <code dir="auto">prepare</code> during <code dir="auto">npm install</code>) through its default <code dir="auto">cmd.exe</code> shell. A script such as <code dir="auto">del distribution &amp;&amp; tsc</code> therefore uses cmd’s <code dir="auto">del</code> even outside Shunter, and cmd’s <code dir="auto">del</code> can return success when the path is missing. Run on the CI’s OS family (for example, use WSL for Ubuntu jobs) and treat Windows-only package-script differences as upstream behavior to report, not change.</p>
 <div class="sl-heading-wrapper level-h2"><h2 id="reports-and-logs">Reports and logs</h2><a class="sl-anchor-link" href="#reports-and-logs"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore="">Section titled “Reports and logs”</span></a></div>
 <p>By default, each completed run writes <code dir="auto">&lt;flowbook-stem&gt;-&lt;final-run-id&gt;.html</code>, <code dir="auto">.json</code>, <code dir="auto">.md</code>, and <code dir="auto">.junit</code> beside the root Flowbook. The run ID comes from CI when available, or from the Flowbook’s generated run ID. <code dir="auto">--html-log &lt;path&gt;</code> changes the HTML bundle path and the sidecars use that stem. <code dir="auto">--no-html-log</code> disables the automatic bundle and native CI publication. Task output is printed to the terminal; the HTML report contains the detailed run record. A desktop run keeps its report in execution history.</p>
 <p>See <a href="/staging/docs/ci/">Running in CI</a> for report contents, provider behavior, and setup guidance.</p>

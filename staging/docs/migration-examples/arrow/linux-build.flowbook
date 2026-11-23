@@ -11,6 +11,7 @@ variables:
       NumpyVersion: "2.0.2"
 flows:
   - id: "prepare-archery"
+    working-directory: ${FlowbookDir}
     name: "Prepare Archery"
     description: "Check Docker and install Arrow's Archery Docker command in a local Python virtual environment."
     tasks:
@@ -29,6 +30,10 @@ flows:
         properties:
           command: "${PythonExe} -m venv .docker/archery-venv"
           working-directory: "${RepoRoot}"
+      - id: spacer-before-comment-install-archery
+        type: comment
+        properties:
+          comment: ''
       - id: "comment-install-archery"
         type: comment
         name: "Install Archery from the local development checkout."
@@ -40,6 +45,7 @@ flows:
           command: "\"${RepoRoot}/.docker/archery-venv/Scripts/python.exe\" -m pip install -e \"dev/archery[docker]\""
           working-directory: "${RepoRoot}"
   - id: "cpp-linux"
+    working-directory: ${FlowbookDir}
     name: "Linux C++ Build and Tests"
     description: "Run Arrow's AMD64 Conda C++ build and CTest job in its upstream Docker image."
     tasks:
@@ -52,6 +58,10 @@ flows:
         type: run-flow
         properties:
           flow: "Prepare Archery"
+      - id: spacer-before-comment-build
+        type: comment
+        properties:
+          comment: ''
       - id: "comment-build"
         name: "Build and run Arrow's upstream C++ job; Archery builds required images and runs cpp_build.sh and cpp_test.sh."
         type: comment
@@ -78,6 +88,7 @@ flows:
           command: "\"${ArcheryExe}\" docker run --env ARROW_CTEST_OUTPUT_JUNIT=/arrow/.shunter/artifacts/cpp.xml conda-cpp"
           working-directory: "${RepoRoot}"
   - id: "pyarrow-linux"
+    working-directory: ${FlowbookDir}
     name: "Linux PyArrow Build and Tests"
     description: "Run the Arrow Python 3.11 Pandas CI job, including its C++ build, PyArrow build, and Python tests, in the upstream Docker image."
     tasks:
@@ -90,6 +101,10 @@ flows:
         type: run-flow
         properties:
           flow: "Prepare Archery"
+      - id: spacer-before-comment-build-1
+        type: comment
+        properties:
+          comment: ''
       - id: "comment-build"
         name: "Run the upstream conda-python-pandas job; its container executes C++ build, PyArrow build, then PyArrow tests in sequence."
         type: comment
@@ -112,6 +127,7 @@ flows:
           working-directory: "${RepoRoot}"
 
   - id: gallery-builds
+    working-directory: ${FlowbookDir}
     name: Gallery C++ and PyArrow jobs
     tasks:
     - id: gallery-builds-label

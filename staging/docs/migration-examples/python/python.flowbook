@@ -1,7 +1,8 @@
 flows:
 - id: main
+  working-directory: ${FlowbookDir}
   name: Python checks
-  description: Run lint and tests together for local development.
+  description: Run Ruff and pytest independently for local development.
   tasks:
   - id: label-lint
     type: comment
@@ -13,6 +14,25 @@ flows:
     type: run-command
     properties:
       command: ruff check sample tests
+    stop-on-failure: false
+    fail-run-on-failure: true
+  - id: spacer-before-label-report-directory
+    type: comment
+    properties:
+      comment: ''
+  - id: label-report-directory
+    type: comment
+    name: Create the local report directory
+    properties:
+      comment: Create the local report directory
+  - id: create-report-directory
+    type: create-directory
+    properties:
+      directory: .shunter
+  - id: spacer-before-label-tests
+    type: comment
+    properties:
+      comment: ''
   - id: label-tests
     type: comment
     name: Run Python tests
@@ -22,7 +42,7 @@ flows:
   - id: tests
     type: run-command
     properties:
-      command: python -m pytest --junitxml=report.xml
+      command: python -m pytest --junitxml=.shunter/report.xml
     artifacts:
     - type: junit
-      path: report.xml
+      path: .shunter/report.xml

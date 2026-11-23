@@ -1,261 +1,340 @@
 variables:
-  - group: "Windows Build"
-    values:
-      - name: "PythonDir"
-        value: "$settings{windows.pythonDir}"
-      - name: "SConsVersion"
-        value: "4.11.1"
-      - name: "VirtualEnv"
-        value: "${RepoRoot}/.venv/shunter-windows-editor"
-      - name: "EditorExe"
-        value: "${RepoRoot}/bin/godot.windows.editor.x86_64.exe"
-      - name: "EditorArchive"
-        value: "${RepoRoot}/.shunter/windows-editor.zip"
-      - name: "SConsExtraFlags"
-        value: ""
-      - name: "SConsCacheDir"
-        value: "${RepoRoot}/.scons_cache"
-      - name: "D3D12Enabled"
-        value: "no"
-        immutable: false
-      - name: "AngleEnabled"
-        value: "no"
-        immutable: false
-      - name: "AccessKitEnabled"
-        value: "no"
-        immutable: false
-      - name: "VsWhereExe"
-        value: "${ProgramFilesX86}/Microsoft Visual Studio/Installer/vswhere.exe"
-      - name: "ProgramFilesX86"
-        value: "$settings{windows.programFilesX86}"
-      - name: "ProgramFiles"
-        value: "$settings{windows.programFiles}"
+- group: Windows Build
+  values:
+  - name: PythonDir
+    value: $settings{windows.pythonDir}
+  - name: SConsVersion
+    value: 4.11.1
+  - name: VirtualEnv
+    value: ${RepoRoot}/.venv/shunter-windows-editor
+  - name: EditorExe
+    value: ${RepoRoot}/bin/godot.windows.editor.x86_64.exe
+  - name: EditorArchive
+    value: ${RepoRoot}/.shunter/windows-editor.zip
+  - name: SConsExtraFlags
+    value: ''
+  - name: SConsCacheDir
+    value: ${RepoRoot}/.scons_cache
+  - name: D3D12Enabled
+    value: 'no'
+    immutable: false
+  - name: AngleEnabled
+    value: 'no'
+    immutable: false
+  - name: AccessKitEnabled
+    value: 'no'
+    immutable: false
+  - name: VsWhereExe
+    value: ${ProgramFilesX86}/Microsoft Visual Studio/Installer/vswhere.exe
+  - name: ProgramFilesX86
+    value: $settings{windows.programFilesX86}
+  - name: ProgramFiles
+    value: $settings{windows.programFiles}
 flows:
-  - id: "msvc-editor"
-    name: "Godot Windows MSVC editor"
-    description: "Build the x64 MSVC editor, run the editor tests, and archive the CI artifact locally."
-    environment:
-      PATH: "${PythonDir};$env{PATH}"
-      SCONS_CACHE_MSVC_CONFIG: "${VirtualEnv}/msvc-config.json"
-      PYTHONIOENCODING: "utf8"
-      BUILD_NAME: "shunter"
-      PROCESSOR_ARCHITECTURE: "AMD64"
-      PYTHONUNBUFFERED: "1"
-      ProgramFiles(x86): "${ProgramFilesX86}"
-      VSCMD_SKIP_SENDTELEMETRY: "1"
-      ProgramFiles: "${ProgramFiles}"
-      ProgramW6432: "${ProgramFiles}"
-    tasks:
-      - id: "comment-1"
-        name: ""
-        type: comment
-      - id: "comment-15"
-        name: "Check x64 Python and the Visual Studio installation"
-        type: comment
-        properties:
-          comment: "Check x64 Python and the Visual Studio installation"
-      - id: "check-tools"
-        type: run-command
-        timeout-seconds: 30
-        properties:
-          command: "python -c \"import struct, sys; print(sys.version); sys.exit(0 if struct.calcsize('P') == 8 else 'Godot requires 64-bit Python')\" && \"${VsWhereExe}\" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | findstr /r \".\""
-          working-directory: "${RepoRoot}"
-      - id: "comment-2"
-        name: ""
-        type: comment
-      - id: "comment-16"
-        name: "Create the editor build virtual environment"
-        type: comment
-        properties:
-          comment: "Create the editor build virtual environment"
-      - id: "create-venv"
-        type: run-command
-        timeout-seconds: 90
-        properties:
-          command: "if not exist \"${VirtualEnv}/Scripts/python.exe\" python -m venv \"${VirtualEnv}\""
-          working-directory: "${RepoRoot}"
-      - id: "comment-3"
-        name: ""
-        type: comment
-      - id: "comment-17"
-        name: "Install the upstream SCons version and zstandard"
-        type: comment
-        properties:
-          comment: "Install the upstream SCons version and zstandard"
-      - id: "setup-scons"
-        type: run-command
-        timeout-seconds: 120
-        properties:
-          command: "\"${VirtualEnv}/Scripts/python.exe\" -m pip install --disable-pip-version-check \"scons==${SConsVersion}\" zstandard && \"${VirtualEnv}/Scripts/scons.exe\" --version"
-          working-directory: "${RepoRoot}"
-      - id: "comment-4"
-        name: ""
-        type: comment
-      - id: "comment-18"
-        name: "Install Direct3D 12 SDK"
-        type: comment
-        properties:
-          comment: "Install Direct3D 12 SDK"
-      - id: "install-d3d12"
-        type: run-command
-        properties:
-          command: "\"${VirtualEnv}/Scripts/python.exe\" .github/flowbooks/install-editor-sdk.py \"misc/scripts/install_d3d12_sdk_windows.py\""
-          working-directory: "${RepoRoot}"
-      - id: "comment-5"
-        name: ""
-        type: comment
-      - id: "comment-19"
-        name: "Record Direct3D 12 availability"
-        type: comment
-        properties:
-          comment: "Record Direct3D 12 availability"
-      - id: "capture-d3d12"
-        type: set-variable
-        properties:
-          source: "TaskOutput"
-          source-task: "install-d3d12"
-          regex: "GODOT_SDK_ENABLED=(yes|no)"
-          variable-name: "D3D12Enabled"
-      - id: "comment-6"
-        name: ""
-        type: comment
-      - id: "comment-20"
-        name: "Install ANGLE SDK"
-        type: comment
-        properties:
-          comment: "Install ANGLE SDK"
-      - id: "install-angle"
-        type: run-command
-        properties:
-          command: "\"${VirtualEnv}/Scripts/python.exe\" .github/flowbooks/install-editor-sdk.py \"misc/scripts/install_angle.py\""
-          working-directory: "${RepoRoot}"
-      - id: "comment-7"
-        name: ""
-        type: comment
-      - id: "comment-21"
-        name: "Record ANGLE availability"
-        type: comment
-        properties:
-          comment: "Record ANGLE availability"
-      - id: "capture-angle"
-        type: set-variable
-        properties:
-          source: "TaskOutput"
-          source-task: "install-angle"
-          regex: "GODOT_SDK_ENABLED=(yes|no)"
-          variable-name: "AngleEnabled"
-      - id: "comment-8"
-        name: ""
-        type: comment
-      - id: "comment-23"
-        name: "Install AccessKit SDK"
-        type: comment
-        properties:
-          comment: "Install AccessKit SDK"
-      - id: "install-accesskit"
-        type: run-command
-        properties:
-          command: "\"${VirtualEnv}/Scripts/python.exe\" .github/flowbooks/install-editor-sdk.py \"misc/scripts/install_accesskit.py\""
-          working-directory: "${RepoRoot}"
-      - id: "comment-22"
-        name: ""
-        type: comment
-      - id: "comment-9"
-        name: "Record AccessKit availability"
-        type: comment
-        properties:
-          comment: "Record AccessKit availability"
-      - id: "capture-accesskit"
-        type: set-variable
-        properties:
-          source: "TaskOutput"
-          source-task: "install-accesskit"
-          regex: "GODOT_SDK_ENABLED=(yes|no)"
-          variable-name: "AccessKitEnabled"
-      - id: "comment-10"
-        name: ""
-        type: comment
-      - id: "comment-24"
-        name: "Build the Windows x64 editor with SCons"
-        type: comment
-        properties:
-          comment: "Build the Windows x64 editor with SCons"
-      - id: "build-editor"
-        type: run-command
-        timeout-seconds: 7200
-        properties:
-          command: "\"${VirtualEnv}/Scripts/scons.exe\" platform=windows target=editor arch=x86_64 use_mingw=no dev_mode=yes module_text_server_fb_enabled=yes debug_symbols=no windows_subsystem=console vsproj=yes vsproj_gen_only=no d3d12=${D3D12Enabled} angle=${AngleEnabled} accesskit=${AccessKitEnabled} \"cache_path=${SConsCacheDir}\" redirect_build_objects=no ${SConsExtraFlags}"
-          working-directory: "${RepoRoot}"
-      - id: "comment-11"
-        name: ""
-        type: comment
-      - id: "comment-25"
-        name: "Check the built editor version"
-        type: comment
-        properties:
-          comment: "Check the built editor version"
-      - id: "editor-version"
-        type: run-command
-        timeout-seconds: 45
-        properties:
-          command: "\"${EditorExe}\" --version"
-          working-directory: "${RepoRoot}"
-      - id: "comment-12"
-        name: ""
-        type: comment
-      - id: "comment-26"
-        name: "Check the built editor command line"
-        type: comment
-        properties:
-          comment: "Check the built editor command line"
-      - id: "editor-help"
-        type: run-command
-        timeout-seconds: 45
-        properties:
-          command: "\"${EditorExe}\" --help"
-          working-directory: "${RepoRoot}"
-      - id: "comment-13"
-        name: ""
-        type: comment
-      - id: "comment-28"
-        name: "Run Godot editor unit tests"
-        type: comment
-        properties:
-          comment: "Run Godot editor unit tests"
-      - id: "prepare-test-results"
-        type: run-command
-        properties:
-          command: "if not exist .shunter\\artifacts mkdir .shunter\\artifacts"
-          working-directory: "${RepoRoot}"
-      - id: "editor-tests"
-        type: run-command
-        timeout-seconds: 900
-        artifacts:
-          - name: "Godot editor tests"
-            path: "${RepoRoot}/.shunter/artifacts/godot-tests.xml"
-            type: "junit"
-        properties:
-          command: "\"${EditorExe}\" --test --force-colors --reporters=junit --out=\"${RepoRoot}/.shunter/artifacts/godot-tests.xml\""
-          working-directory: "${RepoRoot}"
-      - id: "comment-27"
-        name: ""
-        type: comment
-      - id: "comment-14"
-        name: "Archive the local Windows editor artifact"
-        type: comment
-        properties:
-          comment: "Archive the local Windows editor artifact"
-      - id: "archive-editor"
-        type: create-archive
-        artifacts:
-          - path: "${EditorArchive}"
-            type: "file"
-        properties:
-          source: "${RepoRoot}/bin/*"
-          exclude: "*.exp\n*.lib\n*.pdb\nbuild_deps\nbuild_deps/**"
-          base-directory: "${RepoRoot}/bin"
-          destination: "${EditorArchive}"
-          overwrite: "true"
-      - id: "comment-29"
-        name: ""
-        type: comment
+- id: msvc-editor
+  working-directory: ${FlowbookDir}
+  name: Godot Windows MSVC editor
+  description: Run the Windows x64 MSVC editor pipeline by installing tools, building, testing, and archiving through
+    separate stage Flows.
+  environment:
+    PATH: ${PythonDir};$env{PATH}
+    SCONS_CACHE_MSVC_CONFIG: ${VirtualEnv}/msvc-config.json
+    PYTHONIOENCODING: utf8
+    BUILD_NAME: shunter
+    PROCESSOR_ARCHITECTURE: AMD64
+    PYTHONUNBUFFERED: '1'
+    ProgramFiles(x86): ${ProgramFilesX86}
+    VSCMD_SKIP_SENDTELEMETRY: '1'
+    ProgramFiles: ${ProgramFiles}
+    ProgramW6432: ${ProgramFiles}
+  tasks:
+  - id: label-tool-setup
+    type: comment
+    name: Install the Windows build tools.
+    properties:
+      comment: Install the Windows build tools.
+  - id: run-tool-setup
+    type: run-flow
+    properties:
+      flow: tool-setup
+  - id: spacer-before-editor-build
+    type: comment
+    properties:
+      comment: ''
+  - id: label-editor-build
+    type: comment
+    name: Build and inspect the editor.
+    properties:
+      comment: Build and inspect the editor.
+  - id: run-editor-build
+    type: run-flow
+    properties:
+      flow: editor-build
+  - id: spacer-before-editor-tests
+    type: comment
+    properties:
+      comment: ''
+  - id: label-editor-tests
+    type: comment
+    name: Run editor tests.
+    properties:
+      comment: Run editor tests.
+  - id: run-editor-tests
+    type: run-flow
+    properties:
+      flow: editor-tests
+  - id: spacer-before-archive-editor
+    type: comment
+    properties:
+      comment: ''
+  - id: label-archive-editor
+    type: comment
+    name: Archive the editor.
+    properties:
+      comment: Archive the editor.
+  - id: run-archive-editor
+    type: run-flow
+    properties:
+      flow: archive-editor
+- id: tool-setup
+  name: Install the Windows build tools
+  description: Run the install the windows build tools stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-15
+    name: Check x64 Python and the Visual Studio installation
+    type: comment
+    properties:
+      comment: Check x64 Python and the Visual Studio installation
+  - id: check-tools
+    type: run-command
+    timeout-seconds: 30
+    properties:
+      command: python -c "import struct, sys; print(sys.version); sys.exit(0 if struct.calcsize('P') == 8 else 'Godot
+        requires 64-bit Python')" && "${VsWhereExe}" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+        -property installationPath | findstr /r "."
+      working-directory: ${RepoRoot}
+  - id: comment-2
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-16
+    name: Create the editor build virtual environment
+    type: comment
+    properties:
+      comment: Create the editor build virtual environment
+  - id: create-venv
+    type: run-command
+    timeout-seconds: 90
+    properties:
+      command: if not exist "${VirtualEnv}/Scripts/python.exe" python -m venv "${VirtualEnv}"
+      working-directory: ${RepoRoot}
+  - id: comment-3
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-17
+    name: Install the upstream SCons version and zstandard
+    type: comment
+    properties:
+      comment: Install the upstream SCons version and zstandard
+  - id: setup-scons
+    type: run-command
+    timeout-seconds: 120
+    properties:
+      command: '"${VirtualEnv}/Scripts/python.exe" -m pip install --disable-pip-version-check "scons==${SConsVersion}"
+        zstandard && "${VirtualEnv}/Scripts/scons.exe" --version'
+      working-directory: ${RepoRoot}
+  - id: comment-4
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-18
+    name: Install Direct3D 12 SDK
+    type: comment
+    properties:
+      comment: Install Direct3D 12 SDK
+  - id: install-d3d12
+    type: run-command
+    properties:
+      command: '"${VirtualEnv}/Scripts/python.exe" .github/flowbooks/install-editor-sdk.py "misc/scripts/install_d3d12_sdk_windows.py"'
+      working-directory: ${RepoRoot}
+  - id: comment-5
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-19
+    name: Record Direct3D 12 availability
+    type: comment
+    properties:
+      comment: Record Direct3D 12 availability
+  - id: capture-d3d12
+    type: set-variable
+    properties:
+      source: TaskOutput
+      source-task: install-d3d12
+      regex: GODOT_SDK_ENABLED=(yes|no)
+      variable-name: D3D12Enabled
+  - id: comment-6
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-20
+    name: Install ANGLE SDK
+    type: comment
+    properties:
+      comment: Install ANGLE SDK
+  - id: install-angle
+    type: run-command
+    properties:
+      command: '"${VirtualEnv}/Scripts/python.exe" .github/flowbooks/install-editor-sdk.py "misc/scripts/install_angle.py"'
+      working-directory: ${RepoRoot}
+  - id: comment-7
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-21
+    name: Record ANGLE availability
+    type: comment
+    properties:
+      comment: Record ANGLE availability
+  - id: capture-angle
+    type: set-variable
+    properties:
+      source: TaskOutput
+      source-task: install-angle
+      regex: GODOT_SDK_ENABLED=(yes|no)
+      variable-name: AngleEnabled
+  - id: comment-8
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-23
+    name: Install AccessKit SDK
+    type: comment
+    properties:
+      comment: Install AccessKit SDK
+  - id: install-accesskit
+    type: run-command
+    properties:
+      command: '"${VirtualEnv}/Scripts/python.exe" .github/flowbooks/install-editor-sdk.py "misc/scripts/install_accesskit.py"'
+      working-directory: ${RepoRoot}
+  - id: comment-22
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-9
+    name: Record AccessKit availability
+    type: comment
+    properties:
+      comment: Record AccessKit availability
+  - id: capture-accesskit
+    type: set-variable
+    properties:
+      source: TaskOutput
+      source-task: install-accesskit
+      regex: GODOT_SDK_ENABLED=(yes|no)
+      variable-name: AccessKitEnabled
+- id: editor-build
+  name: Build and inspect the editor
+  description: Run the build and inspect the editor stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-24
+    name: Build the Windows x64 editor with SCons
+    type: comment
+    properties:
+      comment: Build the Windows x64 editor with SCons
+  - id: build-editor
+    type: run-command
+    timeout-seconds: 7200
+    properties:
+      command: '"${VirtualEnv}/Scripts/scons.exe" platform=windows target=editor arch=x86_64 use_mingw=no dev_mode=yes
+        module_text_server_fb_enabled=yes debug_symbols=no windows_subsystem=console vsproj=yes vsproj_gen_only=no
+        d3d12=${D3D12Enabled} angle=${AngleEnabled} accesskit=${AccessKitEnabled} "cache_path=${SConsCacheDir}"
+        redirect_build_objects=no ${SConsExtraFlags}'
+      working-directory: ${RepoRoot}
+  - id: comment-11
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-25
+    name: Check the built editor version
+    type: comment
+    properties:
+      comment: Check the built editor version
+  - id: editor-version
+    type: run-command
+    timeout-seconds: 45
+    properties:
+      command: '"${EditorExe}" --version'
+      working-directory: ${RepoRoot}
+  - id: comment-12
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-26
+    name: Check the built editor command line
+    type: comment
+    properties:
+      comment: Check the built editor command line
+  - id: editor-help
+    type: run-command
+    timeout-seconds: 45
+    properties:
+      command: '"${EditorExe}" --help'
+      working-directory: ${RepoRoot}
+- id: editor-tests
+  name: Run editor tests
+  description: Run the run editor tests stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-28
+    name: Run Godot editor unit tests
+    type: comment
+    properties:
+      comment: Run Godot editor unit tests
+  - id: prepare-test-results
+    type: run-command
+    properties:
+      command: if not exist .shunter\artifacts mkdir .shunter\artifacts
+      working-directory: ${RepoRoot}
+  - id: editor-tests
+    type: run-command
+    timeout-seconds: 900
+    artifacts:
+    - name: Godot editor tests
+      path: ${RepoRoot}/.shunter/artifacts/godot-tests.xml
+      type: junit
+    properties:
+      command: '"${EditorExe}" --test --force-colors --reporters=junit --out="${RepoRoot}/.shunter/artifacts/godot-tests.xml"'
+      working-directory: ${RepoRoot}
+- id: archive-editor
+  name: Archive the editor
+  description: Run the archive the editor stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-14
+    name: Archive the local Windows editor artifact
+    type: comment
+    properties:
+      comment: Archive the local Windows editor artifact
+  - id: archive-editor
+    type: create-archive
+    artifacts:
+    - path: ${EditorArchive}
+      type: file
+    properties:
+      source: ${RepoRoot}/bin/*
+      exclude: '*.exp
+
+        *.lib
+
+        *.pdb
+
+        build_deps
+
+        build_deps/**'
+      base-directory: ${RepoRoot}/bin
+      destination: ${EditorArchive}
+      overwrite: 'true'

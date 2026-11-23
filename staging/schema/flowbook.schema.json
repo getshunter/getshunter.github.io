@@ -448,6 +448,20 @@
             }
           ]
         },
+        "fail-run-on-failure": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
         "environment": {
           "oneOf": [
             {
@@ -603,6 +617,11 @@
                 "required": [],
                 "additionalProperties": false
               }
+            },
+            "not": {
+              "required": [
+                "fail-run-on-failure"
+              ]
             }
           }
         },
@@ -1465,6 +1484,11 @@
                 "required": [],
                 "additionalProperties": false
               }
+            },
+            "not": {
+              "required": [
+                "fail-run-on-failure"
+              ]
             }
           }
         },
@@ -1645,6 +1669,11 @@
                 "required": [],
                 "additionalProperties": false
               }
+            },
+            "not": {
+              "required": [
+                "fail-run-on-failure"
+              ]
             }
           }
         },
@@ -1664,6 +1693,11 @@
                 "required": [],
                 "additionalProperties": false
               }
+            },
+            "not": {
+              "required": [
+                "fail-run-on-failure"
+              ]
             }
           }
         },

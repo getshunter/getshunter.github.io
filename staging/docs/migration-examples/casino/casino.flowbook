@@ -1,5 +1,6 @@
 flows:
   - id: build
+    working-directory: ${FlowbookDir}
     name: Build, test and package the casino game
     description: Configure, build, test and package the game in one local run.
     tasks:
@@ -24,6 +25,10 @@ flows:
             properties:
               command: cmake -B build -S "${FlowbookDir}"
               working-directory: ${CasinoWork}
+          - id: spacer-before-label-compile
+            type: comment
+            properties:
+              comment: ''
           - id: label-compile
             type: comment
             name: "Original Jenkins compile stage."
@@ -34,6 +39,10 @@ flows:
             properties:
               command: cmake --build build
               working-directory: ${CasinoWork}
+          - id: spacer-before-label-smoke-test
+            type: comment
+            properties:
+              comment: ''
           - id: label-smoke-test
             type: comment
             name: "Original Jenkins launch/smoke-test stage."
@@ -44,6 +53,10 @@ flows:
             properties:
               command: ./build/casino_game
               working-directory: ${CasinoWork}
+          - id: spacer-before-label-unit-tests
+            type: comment
+            properties:
+              comment: ''
           - id: label-unit-tests
             type: comment
             name: "Original Jenkins unit-test stage."
@@ -54,6 +67,10 @@ flows:
             properties:
               command: ./build/test_game
               working-directory: ${CasinoWork}
+          - id: spacer-before-label-package
+            type: comment
+            properties:
+              comment: ''
           - id: label-package
             type: comment
             name: "Original Jenkins archive/package stage."

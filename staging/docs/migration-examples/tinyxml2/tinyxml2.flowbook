@@ -1,294 +1,383 @@
 variables:
-  - group: CI
-    values:
-      - name: StaticPostfix
-        value: ''
-      - name: ListInstallTree
-        value: tree
+- group: CI
+  values:
+  - name: StaticPostfix
+    value: ''
+  - name: ListInstallTree
+    value: tree
 flows:
-  - id: test
-    name: Build and test TinyXML2
-    description: Configure, build, test and install each library variant in order.
-    tasks:
-      - id: label-static-dbg
-        type: comment
-        name: "Original Actions configure: static Debug, Ninja, and debug postfix."
-        properties:
-          comment: "Original Actions configure: static Debug, Ninja, and debug postfix."
-      - id: static-dbg
-        type: group
-        children:
-          - id: label-configure-static-dbg
-            type: comment
-            name: "Original Actions static Debug configure command."
-            properties:
-              comment: "Original Actions static Debug configure command."
-          - id: configure-static-dbg
-            type: run-command
-            properties:
-              command: >-
-                cmake -G Ninja -S . -B build-static-dbg -DCMAKE_BUILD_TYPE=Debug
-                "-DCMAKE_DEBUG_POSTFIX=d${StaticPostfix}"
-              working-directory: ${FlowbookDir}
-          - id: label-build-static-dbg
-            type: comment
-            name: "Original Actions static Debug build command."
-            properties:
-              comment: "Original Actions static Debug build command."
-          - id: build-static-dbg
-            type: run-command
-            properties:
-              command: cmake --build build-static-dbg
-              working-directory: ${FlowbookDir}
-          - id: label-test-static-dbg
-            type: comment
-            name: "Original Actions static Debug CTest command."
-            properties:
-              comment: "Original Actions static Debug CTest command."
-          - id: test-static-dbg
-            type: run-command
-            properties:
-              command: ctest --output-on-failure
-              working-directory: ${FlowbookDir}/build-static-dbg
-      - id: label-shared-dbg
-        type: comment
-        name: "Original Actions configure/build/test: shared Debug variant."
-        properties:
-          comment: "Original Actions configure/build/test: shared Debug variant."
-      - id: shared-dbg
-        type: group
-        children:
-          - id: label-configure-shared-dbg
-            type: comment
-            name: "Original Actions shared Debug configure command."
-            properties:
-              comment: "Original Actions shared Debug configure command."
-          - id: configure-shared-dbg
-            type: run-command
-            properties:
-              command: >-
-                cmake -G Ninja -S . -B build-shared-dbg -DCMAKE_BUILD_TYPE=Debug
-                -DCMAKE_DEBUG_POSTFIX=d -DBUILD_SHARED_LIBS=ON
-              working-directory: ${FlowbookDir}
-          - id: label-build-shared-dbg
-            type: comment
-            name: "Original Actions shared Debug build command."
-            properties:
-              comment: "Original Actions shared Debug build command."
-          - id: build-shared-dbg
-            type: run-command
-            properties:
-              command: cmake --build build-shared-dbg
-              working-directory: ${FlowbookDir}
-          - id: label-test-shared-dbg
-            type: comment
-            name: "Original Actions shared Debug CTest command."
-            properties:
-              comment: "Original Actions shared Debug CTest command."
-          - id: test-shared-dbg
-            type: run-command
-            properties:
-              command: ctest --output-on-failure
-              working-directory: ${FlowbookDir}/build-shared-dbg
-      - id: label-static-rel
-        type: comment
-        name: "Original Actions configure/build/test: static Release variant."
-        properties:
-          comment: "Original Actions configure/build/test: static Release variant."
-      - id: static-rel
-        type: group
-        children:
-          - id: label-configure-static-rel
-            type: comment
-            name: "Original Actions static Release configure command."
-            properties:
-              comment: "Original Actions static Release configure command."
-          - id: configure-static-rel
-            type: run-command
-            properties:
-              command: >-
-                cmake -G Ninja -S . -B build-static-rel -DCMAKE_BUILD_TYPE=Release
-                "-DCMAKE_RELEASE_POSTFIX=${StaticPostfix}"
-              working-directory: ${FlowbookDir}
-          - id: label-build-static-rel
-            type: comment
-            name: "Original Actions static Release build command."
-            properties:
-              comment: "Original Actions static Release build command."
-          - id: build-static-rel
-            type: run-command
-            properties:
-              command: cmake --build build-static-rel
-              working-directory: ${FlowbookDir}
-          - id: label-test-static-rel
-            type: comment
-            name: "Original Actions static Release CTest command."
-            properties:
-              comment: "Original Actions static Release CTest command."
-          - id: test-static-rel
-            type: run-command
-            properties:
-              command: ctest --output-on-failure
-              working-directory: ${FlowbookDir}/build-static-rel
-      - id: label-shared-rel
-        type: comment
-        name: "Original Actions configure/build/test: shared Release variant."
-        properties:
-          comment: "Original Actions configure/build/test: shared Release variant."
-      - id: shared-rel
-        type: group
-        children:
-          - id: label-configure-shared-rel
-            type: comment
-            name: "Original Actions shared Release configure command."
-            properties:
-              comment: "Original Actions shared Release configure command."
-          - id: configure-shared-rel
-            type: run-command
-            properties:
-              command: >-
-                cmake -G Ninja -S . -B build-shared-rel -DCMAKE_BUILD_TYPE=Release
-                -DBUILD_SHARED_LIBS=ON
-              working-directory: ${FlowbookDir}
-          - id: label-build-shared-rel
-            type: comment
-            name: "Original Actions shared Release build command."
-            properties:
-              comment: "Original Actions shared Release build command."
-          - id: build-shared-rel
-            type: run-command
-            properties:
-              command: cmake --build build-shared-rel
-              working-directory: ${FlowbookDir}
-          - id: label-test-shared-rel
-            type: comment
-            name: "Original Actions shared Release CTest command."
-            properties:
-              comment: "Original Actions shared Release CTest command."
-          - id: test-shared-rel
-            type: run-command
-            properties:
-              command: ctest --output-on-failure
-              working-directory: ${FlowbookDir}/build-shared-rel
-      - id: label-install
-        type: comment
-        name: "Original Actions install step: stage all four build variants."
-        properties:
-          comment: "Original Actions install step: stage all four build variants."
-      - id: install
-        type: group
-        children:
-          - id: label-install-shared-dbg
-            type: comment
-            name: "Original Actions install shared Debug output."
-            properties:
-              comment: "Original Actions install shared Debug output."
-          - id: install-shared-dbg
-            type: run-command
-            properties:
-              command: cmake --install build-shared-dbg --prefix install
-              working-directory: ${FlowbookDir}
-          - id: label-install-static-dbg
-            type: comment
-            name: "Original Actions install static Debug output."
-            properties:
-              comment: "Original Actions install static Debug output."
-          - id: install-static-dbg
-            type: run-command
-            properties:
-              command: cmake --install build-static-dbg --prefix install
-              working-directory: ${FlowbookDir}
-          - id: label-install-shared-rel
-            type: comment
-            name: "Original Actions install shared Release output."
-            properties:
-              comment: "Original Actions install shared Release output."
-          - id: install-shared-rel
-            type: run-command
-            properties:
-              command: cmake --install build-shared-rel --prefix install
-              working-directory: ${FlowbookDir}
-          - id: label-install-static-rel
-            type: comment
-            name: "Original Actions install static Release output."
-            properties:
-              comment: "Original Actions install static Release output."
-          - id: install-static-rel
-            type: run-command
-            properties:
-              command: cmake --install build-static-rel --prefix install
-              working-directory: ${FlowbookDir}
-      - id: label-list-install
-        type: comment
-        name: "Original Actions diagnostic step: list the installed tree."
-        properties:
-          comment: "Original Actions diagnostic step: list the installed tree."
-      - id: list-install
-        type: run-command
-        properties:
-          command: ${ListInstallTree} install
-          working-directory: ${FlowbookDir}
-      - id: label-package-tests
-        type: comment
-        name: "Original Actions installed-package consumer checks."
-        properties:
-          comment: "Original Actions installed-package consumer checks."
-      - id: package-tests
-        type: group
-        children:
-          - id: label-consumer-static-dbg
-            type: comment
-            name: "Original Actions consumer configure, build, and CTest for static Debug."
-            properties:
-              comment: "Original Actions consumer configure, build, and CTest for static Debug."
-          - id: consumer-static-dbg
-            type: run-command
-            properties:
-              command: >-
-                ctest --build-and-test test test-static-dbg --build-generator Ninja
-                --build-options -DCMAKE_BUILD_TYPE=Debug -Dtinyxml2_SHARED_LIBS=NO
-                "-DCMAKE_PREFIX_PATH=${FlowbookDir}/install"
-                --test-command ctest --output-on-failure
-              working-directory: ${FlowbookDir}
-          - id: label-consumer-static-rel
-            type: comment
-            name: "Original Actions consumer configure, build, and CTest for static Release."
-            properties:
-              comment: "Original Actions consumer configure, build, and CTest for static Release."
-          - id: consumer-static-rel
-            type: run-command
-            properties:
-              command: >-
-                ctest --build-and-test test test-static-rel --build-generator Ninja
-                --build-options -DCMAKE_BUILD_TYPE=Release -Dtinyxml2_SHARED_LIBS=NO
-                "-DCMAKE_PREFIX_PATH=${FlowbookDir}/install"
-                --test-command ctest --output-on-failure
-              working-directory: ${FlowbookDir}
-          - id: label-consumer-shared-dbg
-            type: comment
-            name: "Original Actions consumer configure, build, and CTest for shared Debug."
-            properties:
-              comment: "Original Actions consumer configure, build, and CTest for shared Debug."
-          - id: consumer-shared-dbg
-            type: run-command
-            properties:
-              command: >-
-                ctest --build-and-test test test-shared-dbg --build-generator Ninja
-                --build-options -DCMAKE_BUILD_TYPE=Debug -Dtinyxml2_SHARED_LIBS=YES
-                "-DCMAKE_PREFIX_PATH=${FlowbookDir}/install"
-                --test-command ctest --output-on-failure
-              working-directory: ${FlowbookDir}
-          - id: label-consumer-shared-rel
-            type: comment
-            name: "Original Actions consumer configure, build, and CTest for shared Release."
-            properties:
-              comment: "Original Actions consumer configure, build, and CTest for shared Release."
-          - id: consumer-shared-rel
-            type: run-command
-            properties:
-              command: >-
-                ctest --build-and-test test test-shared-rel --build-generator Ninja
-                --build-options -DCMAKE_BUILD_TYPE=Release -Dtinyxml2_SHARED_LIBS=YES
-                "-DCMAKE_PREFIX_PATH=${FlowbookDir}/install"
-                --test-command ctest --output-on-failure
-              working-directory: ${FlowbookDir}
+- id: test
+  working-directory: ${FlowbookDir}
+  name: Build and test TinyXML2
+  description: Configure, build, test and install each library variant in order.
+  tasks:
+  - id: label-static-dbg
+    type: comment
+    name: Run the static debug variant stage.
+    properties:
+      comment: Run the static debug variant stage.
+  - id: run-static-dbg
+    type: run-flow
+    properties:
+      flow: static-dbg
+  - id: spacer-before-shared-dbg
+    type: comment
+    properties:
+      comment: ''
+  - id: label-shared-dbg
+    type: comment
+    name: Run the shared debug variant stage.
+    properties:
+      comment: Run the shared debug variant stage.
+  - id: run-shared-dbg
+    type: run-flow
+    properties:
+      flow: shared-dbg
+  - id: spacer-before-static-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-static-rel
+    type: comment
+    name: Run the static release variant stage.
+    properties:
+      comment: Run the static release variant stage.
+  - id: run-static-rel
+    type: run-flow
+    properties:
+      flow: static-rel
+  - id: spacer-before-shared-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-shared-rel
+    type: comment
+    name: Run the shared release variant stage.
+    properties:
+      comment: Run the shared release variant stage.
+  - id: run-shared-rel
+    type: run-flow
+    properties:
+      flow: shared-rel
+  - id: spacer-before-install
+    type: comment
+    properties:
+      comment: ''
+  - id: label-install
+    type: comment
+    name: Run the install all variants stage.
+    properties:
+      comment: Run the install all variants stage.
+  - id: run-install
+    type: run-flow
+    properties:
+      flow: install
+  - id: spacer-before-list-install
+    type: comment
+    properties:
+      comment: ''
+  - id: label-list-install
+    type: comment
+    name: Run the inspect installed tree stage.
+    properties:
+      comment: Run the inspect installed tree stage.
+  - id: run-list-install
+    type: run-flow
+    properties:
+      flow: list-install
+  - id: spacer-before-package-tests
+    type: comment
+    properties:
+      comment: ''
+  - id: label-package-tests
+    type: comment
+    name: Run the test installed package variants stage.
+    properties:
+      comment: Run the test installed package variants stage.
+  - id: run-package-tests
+    type: run-flow
+    properties:
+      flow: package-tests
+- id: static-dbg
+  name: Static Debug variant
+  description: Run the TinyXML2 static debug variant stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: label-configure-static-dbg
+    type: comment
+    name: Original Actions static Debug configure command.
+    properties:
+      comment: Original Actions static Debug configure command.
+  - id: configure-static-dbg
+    type: run-command
+    properties:
+      command: cmake -G Ninja -S . -B build-static-dbg -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_DEBUG_POSTFIX=d${StaticPostfix}"
+  - id: spacer-before-label-build-static-dbg
+    type: comment
+    properties:
+      comment: ''
+  - id: label-build-static-dbg
+    type: comment
+    name: Original Actions static Debug build command.
+    properties:
+      comment: Original Actions static Debug build command.
+  - id: build-static-dbg
+    type: run-command
+    properties:
+      command: cmake --build build-static-dbg
+  - id: spacer-before-label-test-static-dbg
+    type: comment
+    properties:
+      comment: ''
+  - id: label-test-static-dbg
+    type: comment
+    name: Original Actions static Debug CTest command.
+    properties:
+      comment: Original Actions static Debug CTest command.
+  - id: test-static-dbg
+    type: run-command
+    properties:
+      command: ctest --output-on-failure
+      working-directory: ${FlowbookDir}/build-static-dbg
+- id: shared-dbg
+  name: Shared Debug variant
+  description: Run the TinyXML2 shared debug variant stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: label-configure-shared-dbg
+    type: comment
+    name: Original Actions shared Debug configure command.
+    properties:
+      comment: Original Actions shared Debug configure command.
+  - id: configure-shared-dbg
+    type: run-command
+    properties:
+      command: cmake -G Ninja -S . -B build-shared-dbg -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEBUG_POSTFIX=d -DBUILD_SHARED_LIBS=ON
+  - id: spacer-before-label-build-shared-dbg
+    type: comment
+    properties:
+      comment: ''
+  - id: label-build-shared-dbg
+    type: comment
+    name: Original Actions shared Debug build command.
+    properties:
+      comment: Original Actions shared Debug build command.
+  - id: build-shared-dbg
+    type: run-command
+    properties:
+      command: cmake --build build-shared-dbg
+  - id: spacer-before-label-test-shared-dbg
+    type: comment
+    properties:
+      comment: ''
+  - id: label-test-shared-dbg
+    type: comment
+    name: Original Actions shared Debug CTest command.
+    properties:
+      comment: Original Actions shared Debug CTest command.
+  - id: test-shared-dbg
+    type: run-command
+    properties:
+      command: ctest --output-on-failure
+      working-directory: ${FlowbookDir}/build-shared-dbg
+- id: static-rel
+  name: Static Release variant
+  description: Run the TinyXML2 static release variant stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: label-configure-static-rel
+    type: comment
+    name: Original Actions static Release configure command.
+    properties:
+      comment: Original Actions static Release configure command.
+  - id: configure-static-rel
+    type: run-command
+    properties:
+      command: cmake -G Ninja -S . -B build-static-rel -DCMAKE_BUILD_TYPE=Release "-DCMAKE_RELEASE_POSTFIX=${StaticPostfix}"
+  - id: spacer-before-label-build-static-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-build-static-rel
+    type: comment
+    name: Original Actions static Release build command.
+    properties:
+      comment: Original Actions static Release build command.
+  - id: build-static-rel
+    type: run-command
+    properties:
+      command: cmake --build build-static-rel
+  - id: spacer-before-label-test-static-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-test-static-rel
+    type: comment
+    name: Original Actions static Release CTest command.
+    properties:
+      comment: Original Actions static Release CTest command.
+  - id: test-static-rel
+    type: run-command
+    properties:
+      command: ctest --output-on-failure
+      working-directory: ${FlowbookDir}/build-static-rel
+- id: shared-rel
+  name: Shared Release variant
+  description: Run the TinyXML2 shared release variant stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: label-configure-shared-rel
+    type: comment
+    name: Original Actions shared Release configure command.
+    properties:
+      comment: Original Actions shared Release configure command.
+  - id: configure-shared-rel
+    type: run-command
+    properties:
+      command: cmake -G Ninja -S . -B build-shared-rel -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+  - id: spacer-before-label-build-shared-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-build-shared-rel
+    type: comment
+    name: Original Actions shared Release build command.
+    properties:
+      comment: Original Actions shared Release build command.
+  - id: build-shared-rel
+    type: run-command
+    properties:
+      command: cmake --build build-shared-rel
+  - id: spacer-before-label-test-shared-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-test-shared-rel
+    type: comment
+    name: Original Actions shared Release CTest command.
+    properties:
+      comment: Original Actions shared Release CTest command.
+  - id: test-shared-rel
+    type: run-command
+    properties:
+      command: ctest --output-on-failure
+      working-directory: ${FlowbookDir}/build-shared-rel
+- id: install
+  name: Install all variants
+  description: Run the TinyXML2 install all variants stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: label-install-shared-dbg
+    type: comment
+    name: Original Actions install shared Debug output.
+    properties:
+      comment: Original Actions install shared Debug output.
+  - id: install-shared-dbg
+    type: run-command
+    properties:
+      command: cmake --install build-shared-dbg --prefix install
+  - id: spacer-before-label-install-static-dbg
+    type: comment
+    properties:
+      comment: ''
+  - id: label-install-static-dbg
+    type: comment
+    name: Original Actions install static Debug output.
+    properties:
+      comment: Original Actions install static Debug output.
+  - id: install-static-dbg
+    type: run-command
+    properties:
+      command: cmake --install build-static-dbg --prefix install
+  - id: spacer-before-label-install-shared-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-install-shared-rel
+    type: comment
+    name: Original Actions install shared Release output.
+    properties:
+      comment: Original Actions install shared Release output.
+  - id: install-shared-rel
+    type: run-command
+    properties:
+      command: cmake --install build-shared-rel --prefix install
+  - id: spacer-before-label-install-static-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-install-static-rel
+    type: comment
+    name: Original Actions install static Release output.
+    properties:
+      comment: Original Actions install static Release output.
+  - id: install-static-rel
+    type: run-command
+    properties:
+      command: cmake --install build-static-rel --prefix install
+- id: list-install
+  name: Inspect installed tree
+  description: Run the TinyXML2 inspect installed tree stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: list-install
+    type: run-command
+    properties:
+      command: ${ListInstallTree} install
+- id: package-tests
+  name: Test installed package variants
+  description: Run the TinyXML2 test installed package variants stage.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: label-consumer-static-dbg
+    type: comment
+    name: Original Actions consumer configure, build, and CTest for static Debug.
+    properties:
+      comment: Original Actions consumer configure, build, and CTest for static Debug.
+  - id: consumer-static-dbg
+    type: run-command
+    properties:
+      command: ctest --build-and-test test test-static-dbg --build-generator Ninja --build-options -DCMAKE_BUILD_TYPE=Debug
+        -Dtinyxml2_SHARED_LIBS=NO "-DCMAKE_PREFIX_PATH=${FlowbookDir}/install" --test-command ctest --output-on-failure
+  - id: spacer-before-label-consumer-static-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-consumer-static-rel
+    type: comment
+    name: Original Actions consumer configure, build, and CTest for static Release.
+    properties:
+      comment: Original Actions consumer configure, build, and CTest for static Release.
+  - id: consumer-static-rel
+    type: run-command
+    properties:
+      command: ctest --build-and-test test test-static-rel --build-generator Ninja --build-options -DCMAKE_BUILD_TYPE=Release
+        -Dtinyxml2_SHARED_LIBS=NO "-DCMAKE_PREFIX_PATH=${FlowbookDir}/install" --test-command ctest --output-on-failure
+  - id: spacer-before-label-consumer-shared-dbg
+    type: comment
+    properties:
+      comment: ''
+  - id: label-consumer-shared-dbg
+    type: comment
+    name: Original Actions consumer configure, build, and CTest for shared Debug.
+    properties:
+      comment: Original Actions consumer configure, build, and CTest for shared Debug.
+  - id: consumer-shared-dbg
+    type: run-command
+    properties:
+      command: ctest --build-and-test test test-shared-dbg --build-generator Ninja --build-options -DCMAKE_BUILD_TYPE=Debug
+        -Dtinyxml2_SHARED_LIBS=YES "-DCMAKE_PREFIX_PATH=${FlowbookDir}/install" --test-command ctest --output-on-failure
+  - id: spacer-before-label-consumer-shared-rel
+    type: comment
+    properties:
+      comment: ''
+  - id: label-consumer-shared-rel
+    type: comment
+    name: Original Actions consumer configure, build, and CTest for shared Release.
+    properties:
+      comment: Original Actions consumer configure, build, and CTest for shared Release.
+  - id: consumer-shared-rel
+    type: run-command
+    properties:
+      command: ctest --build-and-test test test-shared-rel --build-generator Ninja --build-options -DCMAKE_BUILD_TYPE=Release
+        -Dtinyxml2_SHARED_LIBS=YES "-DCMAKE_PREFIX_PATH=${FlowbookDir}/install" --test-command ctest --output-on-failure

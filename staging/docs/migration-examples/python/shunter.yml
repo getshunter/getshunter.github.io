@@ -11,11 +11,11 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.11', '3.12']
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Project dependencies: add your setup steps here, or provision them in the Flow.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install project checks

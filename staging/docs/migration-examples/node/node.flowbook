@@ -1,18 +1,54 @@
 flows:
 - id: main
+  working-directory: ${FlowbookDir}
   name: Node checks
-  description: Run lint and tests together for local development.
+  description: Run each Node syntax check, then the test suite.
   tasks:
   - id: label-lint
     type: comment
-    name: Run Node lint checks
+    name: Check sample JavaScript syntax
     properties:
-      comment: Run Node lint checks
-    description: This task maps to the original GitHub Actions lint step.
+      comment: Check sample JavaScript syntax
+    description: The original lint script checks both files; this direct check is separate so the remaining checks still run after a failure.
   - id: lint
     type: run-command
     properties:
-      command: npm run lint
+      command: node --check sample/slug.js
+    stop-on-failure: false
+    fail-run-on-failure: true
+  - id: spacer-before-label-test-syntax
+    type: comment
+    properties:
+      comment: ''
+  - id: label-test-syntax
+    type: comment
+    name: Check test JavaScript syntax
+    properties:
+      comment: Check test JavaScript syntax
+    description: This is the second direct check from the original lint script; both checks are independent.
+  - id: lint-test
+    type: run-command
+    properties:
+      command: node --check test/slug.test.js
+    stop-on-failure: false
+    fail-run-on-failure: true
+  - id: spacer-before-label-report-directory
+    type: comment
+    properties:
+      comment: ''
+  - id: label-report-directory
+    type: comment
+    name: Create the local report directory
+    properties:
+      comment: Create the local report directory
+  - id: create-report-directory
+    type: create-directory
+    properties:
+      directory: .shunter
+  - id: spacer-before-label-tests
+    type: comment
+    properties:
+      comment: ''
   - id: label-tests
     type: comment
     name: Run Node tests
@@ -22,7 +58,7 @@ flows:
   - id: tests
     type: run-command
     properties:
-      command: npm test -- --test-reporter=junit --test-reporter-destination=report.xml
+      command: node --test --test-reporter=junit --test-reporter-destination=.shunter/report.xml
     artifacts:
     - type: junit
-      path: report.xml
+      path: .shunter/report.xml

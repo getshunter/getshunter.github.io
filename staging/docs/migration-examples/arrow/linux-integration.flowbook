@@ -1,258 +1,341 @@
 variables:
-  - group: "General"
-    values:
-      ArcheryExe: "${RepoRoot}/.docker/archery-venv/Scripts/archery.exe"
-      DefaultBranch: "main"
-      UbuntuVersion: "22.04"
-      ArrowRustUrl: "https://github.com/apache/arrow-rs.git"
-      NanoarrowUrl: "https://github.com/apache/arrow-nanoarrow.git"
-      ArrowGoUrl: "https://github.com/apache/arrow-go.git"
-      ArrowJavaUrl: "https://github.com/apache/arrow-java.git"
-      ArrowJsUrl: "https://github.com/apache/arrow-js.git"
-      ArrowDotnetUrl: "https://github.com/apache/arrow-dotnet.git"
+- group: General
+  values:
+    ArcheryExe: ${RepoRoot}/.docker/archery-venv/Scripts/archery.exe
+    DefaultBranch: main
+    UbuntuVersion: '22.04'
+    ArrowRustUrl: https://github.com/apache/arrow-rs.git
+    NanoarrowUrl: https://github.com/apache/arrow-nanoarrow.git
+    ArrowGoUrl: https://github.com/apache/arrow-go.git
+    ArrowJavaUrl: https://github.com/apache/arrow-java.git
+    ArrowJsUrl: https://github.com/apache/arrow-js.git
+    ArrowDotnetUrl: https://github.com/apache/arrow-dotnet.git
 flows:
-  - id: "prepare-integration-sources"
-    name: "Prepare Integration Sources"
-    description: "Initialize Arrow submodules and synchronize the six language integration repositories used by the upstream CI job."
-    tasks:
-      - id: "comment-submodules"
-        name: "Match GitHub Actions' recursive submodule checkout for Arrow's test data and C++ dependencies."
-        type: comment
-        properties:
-          comment: "Match GitHub Actions' recursive submodule checkout for Arrow's test data and C++ dependencies."
-      - id: "initialize-submodules"
-        type: run-command
-        properties:
-          command: "git submodule update --init --recursive"
-          working-directory: "${RepoRoot}"
-      - id: "space-before-dependencies"
-        name: ""
-        type: comment
-        properties:
-          comment: ""
-      - id: "comment-dependencies"
-        name: "Clone absent projects and fast-forward existing checkouts, so the source-preparation Flow can be repeated."
-        type: comment
-        properties:
-          comment: "Clone absent projects and fast-forward existing checkouts, so the source-preparation Flow can be repeated."
-      - id: "synchronize-dependencies"
-        type: group
-        children:
-          - id: "space-before-rust"
-            name: ""
-            type: comment
-            properties:
-              comment: ""
-          - id: "comment-rust"
-            name: "Arrow Rust supplies Rust IPC and Flight implementations."
-            type: comment
-            properties:
-              comment: "Arrow Rust supplies Rust IPC and Flight implementations."
-          - id: "rust-present"
-            type: if
-            properties:
-              condition: "__import__('os').path.isdir(r'${RepoRoot}/rust/.git')"
-            children:
-              - id: "pull-rust"
-                type: git-command
-                properties:
-                  operation: "Pull"
-                  local-repo: "${RepoRoot}/rust"
-                  extra-options: "--ff-only"
-          - id: "rust-absent"
-            type: else
-            children:
-              - id: "clone-rust"
-                type: git-command
-                properties:
-                  local-repo: "${RepoRoot}/rust"
-                  remote-repo: "${ArrowRustUrl}"
-                  extra-options: "--depth 1"
-          - id: "space-before-nanoarrow"
-            name: ""
-            type: comment
-            properties:
-              comment: ""
-          - id: "comment-nanoarrow"
-            name: "nanoarrow exercises the Arrow C Data and Stream interfaces."
-            type: comment
-            properties:
-              comment: "nanoarrow exercises the Arrow C Data and Stream interfaces."
-          - id: "nanoarrow-present"
-            type: if
-            properties:
-              condition: "__import__('os').path.isdir(r'${RepoRoot}/nanoarrow/.git')"
-            children:
-              - id: "pull-nanoarrow"
-                type: git-command
-                properties:
-                  operation: "Pull"
-                  local-repo: "${RepoRoot}/nanoarrow"
-                  extra-options: "--ff-only"
-          - id: "nanoarrow-absent"
-            type: else
-            children:
-              - id: "clone-nanoarrow"
-                type: git-command
-                properties:
-                  local-repo: "${RepoRoot}/nanoarrow"
-                  remote-repo: "${NanoarrowUrl}"
-                  extra-options: "--depth 1"
-          - id: "space-before-go"
-            name: ""
-            type: comment
-            properties:
-              comment: ""
-          - id: "comment-go"
-            name: "Arrow Go builds against the shared C++ libraries."
-            type: comment
-            properties:
-              comment: "Arrow Go builds against the shared C++ libraries."
-          - id: "go-present"
-            type: if
-            properties:
-              condition: "__import__('os').path.isdir(r'${RepoRoot}/go/.git')"
-            children:
-              - id: "pull-go"
-                type: git-command
-                properties:
-                  operation: "Pull"
-                  local-repo: "${RepoRoot}/go"
-                  extra-options: "--ff-only"
-          - id: "go-absent"
-            type: else
-            children:
-              - id: "clone-go"
-                type: git-command
-                properties:
-                  local-repo: "${RepoRoot}/go"
-                  remote-repo: "${ArrowGoUrl}"
-                  extra-options: "--depth 1"
-          - id: "space-before-java"
-            name: ""
-            type: comment
-            properties:
-              comment: ""
-          - id: "comment-java"
-            name: "Arrow Java builds JNI bindings and Java integration tests."
-            type: comment
-            properties:
-              comment: "Arrow Java builds JNI bindings and Java integration tests."
-          - id: "java-present"
-            type: if
-            properties:
-              condition: "__import__('os').path.isdir(r'${RepoRoot}/java/.git')"
-            children:
-              - id: "pull-java"
-                type: git-command
-                properties:
-                  operation: "Pull"
-                  local-repo: "${RepoRoot}/java"
-                  extra-options: "--ff-only"
-          - id: "java-absent"
-            type: else
-            children:
-              - id: "clone-java"
-                type: git-command
-                properties:
-                  local-repo: "${RepoRoot}/java"
-                  remote-repo: "${ArrowJavaUrl}"
-                  extra-options: "--depth 1"
-          - id: "space-before-js"
-            name: ""
-            type: comment
-            properties:
-              comment: ""
-          - id: "comment-js"
-            name: "Arrow JavaScript participates in cross-language data tests."
-            type: comment
-            properties:
-              comment: "Arrow JavaScript participates in cross-language data tests."
-          - id: "js-present"
-            type: if
-            properties:
-              condition: "__import__('os').path.isdir(r'${RepoRoot}/js/.git')"
-            children:
-              - id: "pull-js"
-                type: git-command
-                properties:
-                  operation: "Pull"
-                  local-repo: "${RepoRoot}/js"
-                  extra-options: "--ff-only"
-          - id: "js-absent"
-            type: else
-            children:
-              - id: "clone-js"
-                type: git-command
-                properties:
-                  local-repo: "${RepoRoot}/js"
-                  remote-repo: "${ArrowJsUrl}"
-                  extra-options: "--depth 1"
-          - id: "space-before-dotnet"
-            name: ""
-            type: comment
-            properties:
-              comment: ""
-          - id: "comment-dotnet"
-            name: "Arrow .NET adds C Data Interface and IPC integration coverage."
-            type: comment
-            properties:
-              comment: "Arrow .NET adds C Data Interface and IPC integration coverage."
-          - id: "dotnet-present"
-            type: if
-            properties:
-              condition: "__import__('os').path.isdir(r'${RepoRoot}/dotnet/.git')"
-            children:
-              - id: "pull-dotnet"
-                type: git-command
-                properties:
-                  operation: "Pull"
-                  local-repo: "${RepoRoot}/dotnet"
-                  extra-options: "--ff-only"
-          - id: "dotnet-absent"
-            type: else
-            children:
-              - id: "clone-dotnet"
-                type: git-command
-                properties:
-                  local-repo: "${RepoRoot}/dotnet"
-                  remote-repo: "${ArrowDotnetUrl}"
-                  extra-options: "--depth 1"
-  - id: "integration-linux"
-    name: "Linux Cross-Language Integration"
-    description: "Run Arrow's AMD64 Conda integration job across C++, Rust, nanoarrow, Go, Java, JavaScript, .NET, and Ruby."
-    tasks:
-      - id: "space-before-setup"
-        name: ""
-        type: comment
-        properties:
-          comment: ""
-      - id: "comment-setup"
-        name: "Reuse the local Archery setup, then prepare Arrow and its language repositories."
-        type: comment
-        properties:
-          comment: "Reuse the local Archery setup, then prepare Arrow and its language repositories."
-      - id: "prepare-archery"
-        type: run-flow
-        properties:
-          flowbook: "linux-build.flowbook"
-          flow: "Prepare Archery"
-      - id: "prepare-integration-sources"
-        type: run-flow
-        properties:
-          flow: "Prepare Integration Sources"
-      - id: "comment-integration"
-        name: "Archery builds the integration image, then runs Arrow's integration build and interoperability tests with all supported language flags enabled."
-        type: comment
-        properties:
-          comment: "Archery builds the integration image, then runs Arrow's integration build and interoperability tests with all supported language flags enabled."
-      - id: "run-integration"
-        type: run-command
-        environment:
-          ARCH: "amd64"
-          ARCHERY_DEBUG: "1"
-          DOCKER_VOLUME_PREFIX: ".docker/"
-          UBUNTU: "22.04"
-        properties:
-          command: "\"${ArcheryExe}\" docker run --env ARCHERY_DEFAULT_BRANCH=${DefaultBranch} --env ARCHERY_INTEGRATION_WITH_DOTNET=1 --env ARCHERY_INTEGRATION_WITH_GO=1 --env ARCHERY_INTEGRATION_WITH_JAVA=1 --env ARCHERY_INTEGRATION_WITH_JS=1 --env ARCHERY_INTEGRATION_WITH_NANOARROW=1 --env ARCHERY_INTEGRATION_WITH_RUST=1 --env RUST_BACKTRACE=1 conda-integration"
-          working-directory: "${RepoRoot}"
+- id: prepare-integration-sources
+  working-directory: ${FlowbookDir}
+  name: Prepare Integration Sources
+  description: Initialize Arrow submodules and synchronize the six language integration repositories used by the
+    upstream CI job.
+  tasks:
+  - id: comment-submodules
+    name: Match GitHub Actions' recursive submodule checkout for Arrow's test data and C++ dependencies.
+    type: comment
+    properties:
+      comment: Match GitHub Actions' recursive submodule checkout for Arrow's test data and C++ dependencies.
+  - id: initialize-submodules
+    type: run-command
+    properties:
+      command: git submodule update --init --recursive
+      working-directory: ${RepoRoot}
+  - id: space-before-dependencies
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-dependencies
+    name: Clone absent projects and fast-forward existing checkouts, so the source-preparation Flow can be repeated.
+    type: comment
+    properties:
+      comment: Clone absent projects and fast-forward existing checkouts, so the source-preparation Flow can be
+        repeated.
+  - id: spacer-before-sync-rust
+    type: comment
+    properties:
+      comment: ''
+  - id: label-sync-rust
+    type: comment
+    name: Prepare the synchronize rust integration source.
+    properties:
+      comment: Prepare the synchronize rust integration source.
+  - id: run-sync-rust
+    type: run-flow
+    properties:
+      flow: sync-rust
+  - id: spacer-before-sync-exercises
+    type: comment
+    properties:
+      comment: ''
+  - id: label-sync-exercises
+    type: comment
+    name: Prepare the synchronize exercises integration source.
+    properties:
+      comment: Prepare the synchronize exercises integration source.
+  - id: run-sync-nanoarrow
+    type: run-flow
+    properties:
+      flow: sync-nanoarrow
+  - id: spacer-before-sync-go
+    type: comment
+    properties:
+      comment: ''
+  - id: label-sync-go
+    type: comment
+    name: Prepare the synchronize go integration source.
+    properties:
+      comment: Prepare the synchronize go integration source.
+  - id: run-sync-go
+    type: run-flow
+    properties:
+      flow: sync-go
+  - id: spacer-before-sync-java
+    type: comment
+    properties:
+      comment: ''
+  - id: label-sync-java
+    type: comment
+    name: Prepare the synchronize java integration source.
+    properties:
+      comment: Prepare the synchronize java integration source.
+  - id: run-sync-java
+    type: run-flow
+    properties:
+      flow: sync-java
+  - id: spacer-before-sync-javascript
+    type: comment
+    properties:
+      comment: ''
+  - id: label-sync-javascript
+    type: comment
+    name: Prepare the synchronize javascript integration source.
+    properties:
+      comment: Prepare the synchronize javascript integration source.
+  - id: run-sync-javascript
+    type: run-flow
+    properties:
+      flow: sync-javascript
+  - id: spacer-before-sync-.net
+    type: comment
+    properties:
+      comment: ''
+  - id: label-sync-.net
+    type: comment
+    name: Prepare the synchronize .net integration source.
+    properties:
+      comment: Prepare the synchronize .net integration source.
+  - id: run-sync-dotnet
+    type: run-flow
+    properties:
+      flow: sync-dotnet
+- id: integration-linux
+  working-directory: ${FlowbookDir}
+  name: Linux Cross-Language Integration
+  description: Run Arrow's AMD64 Conda integration job across C++, Rust, nanoarrow, Go, Java, JavaScript, .NET,
+    and Ruby.
+  tasks:
+  - id: comment-setup
+    name: Reuse the local Archery setup, then prepare Arrow and its language repositories.
+    type: comment
+    properties:
+      comment: Reuse the local Archery setup, then prepare Arrow and its language repositories.
+  - id: prepare-archery
+    type: run-flow
+    properties:
+      flowbook: linux-build.flowbook
+      flow: Prepare Archery
+  - id: prepare-integration-sources
+    type: run-flow
+    properties:
+      flow: Prepare Integration Sources
+  - id: spacer-before-comment-integration
+    type: comment
+    properties:
+      comment: ''
+  - id: comment-integration
+    name: Archery builds the integration image, then runs Arrow's integration build and interoperability tests with
+      all supported language flags enabled.
+    type: comment
+    properties:
+      comment: Archery builds the integration image, then runs Arrow's integration build and interoperability tests
+        with all supported language flags enabled.
+  - id: run-integration
+    type: run-command
+    environment:
+      ARCH: amd64
+      ARCHERY_DEBUG: '1'
+      DOCKER_VOLUME_PREFIX: .docker/
+      UBUNTU: '22.04'
+    properties:
+      command: '"${ArcheryExe}" docker run --env ARCHERY_DEFAULT_BRANCH=${DefaultBranch} --env ARCHERY_INTEGRATION_WITH_DOTNET=1
+        --env ARCHERY_INTEGRATION_WITH_GO=1 --env ARCHERY_INTEGRATION_WITH_JAVA=1 --env ARCHERY_INTEGRATION_WITH_JS=1
+        --env ARCHERY_INTEGRATION_WITH_NANOARROW=1 --env ARCHERY_INTEGRATION_WITH_RUST=1 --env RUST_BACKTRACE=1
+        conda-integration'
+      working-directory: ${RepoRoot}
+- id: sync-rust
+  name: Synchronize rust integration source
+  description: Update or clone the synchronize rust integration source checkout.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-rust
+    name: Arrow Rust supplies Rust IPC and Flight implementations.
+    type: comment
+    properties:
+      comment: Arrow Rust supplies Rust IPC and Flight implementations.
+  - id: rust-present
+    type: if
+    properties:
+      condition: __import__('os').path.isdir(r'${RepoRoot}/rust/.git')
+    children:
+    - id: pull-rust
+      type: git-command
+      properties:
+        operation: Pull
+        local-repo: ${RepoRoot}/rust
+        extra-options: --ff-only
+  - id: rust-absent
+    type: else
+    children:
+    - id: clone-rust
+      type: git-command
+      properties:
+        local-repo: ${RepoRoot}/rust
+        remote-repo: ${ArrowRustUrl}
+        extra-options: --depth 1
+- id: sync-nanoarrow
+  name: Synchronize exercises integration source
+  description: Update or clone the synchronize exercises integration source checkout.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-nanoarrow
+    name: nanoarrow exercises the Arrow C Data and Stream interfaces.
+    type: comment
+    properties:
+      comment: nanoarrow exercises the Arrow C Data and Stream interfaces.
+  - id: nanoarrow-present
+    type: if
+    properties:
+      condition: __import__('os').path.isdir(r'${RepoRoot}/nanoarrow/.git')
+    children:
+    - id: pull-nanoarrow
+      type: git-command
+      properties:
+        operation: Pull
+        local-repo: ${RepoRoot}/nanoarrow
+        extra-options: --ff-only
+  - id: nanoarrow-absent
+    type: else
+    children:
+    - id: clone-nanoarrow
+      type: git-command
+      properties:
+        local-repo: ${RepoRoot}/nanoarrow
+        remote-repo: ${NanoarrowUrl}
+        extra-options: --depth 1
+- id: sync-go
+  name: Synchronize go integration source
+  description: Update or clone the synchronize go integration source checkout.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-go
+    name: Arrow Go builds against the shared C++ libraries.
+    type: comment
+    properties:
+      comment: Arrow Go builds against the shared C++ libraries.
+  - id: go-present
+    type: if
+    properties:
+      condition: __import__('os').path.isdir(r'${RepoRoot}/go/.git')
+    children:
+    - id: pull-go
+      type: git-command
+      properties:
+        operation: Pull
+        local-repo: ${RepoRoot}/go
+        extra-options: --ff-only
+  - id: go-absent
+    type: else
+    children:
+    - id: clone-go
+      type: git-command
+      properties:
+        local-repo: ${RepoRoot}/go
+        remote-repo: ${ArrowGoUrl}
+        extra-options: --depth 1
+- id: sync-java
+  name: Synchronize java integration source
+  description: Update or clone the synchronize java integration source checkout.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-java
+    name: Arrow Java builds JNI bindings and Java integration tests.
+    type: comment
+    properties:
+      comment: Arrow Java builds JNI bindings and Java integration tests.
+  - id: java-present
+    type: if
+    properties:
+      condition: __import__('os').path.isdir(r'${RepoRoot}/java/.git')
+    children:
+    - id: pull-java
+      type: git-command
+      properties:
+        operation: Pull
+        local-repo: ${RepoRoot}/java
+        extra-options: --ff-only
+  - id: java-absent
+    type: else
+    children:
+    - id: clone-java
+      type: git-command
+      properties:
+        local-repo: ${RepoRoot}/java
+        remote-repo: ${ArrowJavaUrl}
+        extra-options: --depth 1
+- id: sync-javascript
+  name: Synchronize javascript integration source
+  description: Update or clone the synchronize javascript integration source checkout.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-js
+    name: Arrow JavaScript participates in cross-language data tests.
+    type: comment
+    properties:
+      comment: Arrow JavaScript participates in cross-language data tests.
+  - id: js-present
+    type: if
+    properties:
+      condition: __import__('os').path.isdir(r'${RepoRoot}/js/.git')
+    children:
+    - id: pull-js
+      type: git-command
+      properties:
+        operation: Pull
+        local-repo: ${RepoRoot}/js
+        extra-options: --ff-only
+  - id: js-absent
+    type: else
+    children:
+    - id: clone-js
+      type: git-command
+      properties:
+        local-repo: ${RepoRoot}/js
+        remote-repo: ${ArrowJsUrl}
+        extra-options: --depth 1
+- id: sync-dotnet
+  name: Synchronize .net integration source
+  description: Update or clone the synchronize .net integration source checkout.
+  working-directory: ${FlowbookDir}
+  tasks:
+  - id: comment-dotnet
+    name: Arrow .NET adds C Data Interface and IPC integration coverage.
+    type: comment
+    properties:
+      comment: Arrow .NET adds C Data Interface and IPC integration coverage.
+  - id: dotnet-present
+    type: if
+    properties:
+      condition: __import__('os').path.isdir(r'${RepoRoot}/dotnet/.git')
+    children:
+    - id: pull-dotnet
+      type: git-command
+      properties:
+        operation: Pull
+        local-repo: ${RepoRoot}/dotnet
+        extra-options: --ff-only
+  - id: dotnet-absent
+    type: else
+    children:
+    - id: clone-dotnet
+      type: git-command
+      properties:
+        local-repo: ${RepoRoot}/dotnet
+        remote-repo: ${ArrowDotnetUrl}
+        extra-options: --depth 1
